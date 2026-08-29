@@ -187,6 +187,11 @@ Phase 2 (Authentication and User Management) is in progress.
   (email authentication, superuser creation), role helper properties
   (`is_tenant`, `is_landlord`, `is_admin`), registered in Django Admin,
   migration `accounts.0001_initial` applied, Role-enabled user model.
+- **Sprint 2.2 (completed):** Registration — public `POST /api/v1/auth/register/`
+  endpoint registering TENANT and LANDLORD accounts. Includes email format and
+  duplicate-account prevention, Django password validation, role restriction
+  (ADMIN rejected — created administratively only), password hashing, and a
+  consistent `success/message/data` response envelope. 9 registration API tests.
 
-Features (registration, login/JWT, apartments, recommendations, messaging,
+Features (login/JWT, apartments, recommendations, messaging,
 verification, administration) are not yet implemented.

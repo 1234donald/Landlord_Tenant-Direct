@@ -1,9 +1,13 @@
 """API version 1 URL routing.
 
-Populated in later phases with the approved endpoint structure.
-
-NOTE: currently intentionally empty. No endpoint has been implemented yet.
+Populated incrementally with the approved endpoint structure. Currently only
+the authentication registration endpoint is implemented; the remaining auth
+endpoints (login, refresh, logout, me) arrive in Sprint 2.3.
 """
 from django.urls import path
 
-urlpatterns = []
+from apps.accounts.views import RegisterView
+
+urlpatterns = [
+    path("auth/register/", RegisterView.as_view(), name="auth-register"),
+]
