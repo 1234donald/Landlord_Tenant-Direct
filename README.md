@@ -73,7 +73,12 @@ landlord_tenant_project/
 │   ├── ranking.py
 │   └── evaluation.py
 ├── templates/
+│   ├── base.html
+│   ├── home.html
+│   └── about.html
 ├── static/
+│   ├── css/
+│   └── vendor/           (Bootstrap 5 + icons, local)
 ├── media/
 ├── staticfiles/
 └── tests/
@@ -171,8 +176,8 @@ Phase 1 (Project Foundation and Environment) is in progress.
 - **Sprint 1.2 (completed):** Project and repository initialisation (Git, `.gitignore`, `.env.example`, README, branch strategy).
 - **Sprint 1.3 (completed):** Django project initialisation — virtual environment, approved dependencies installed and pinned, `config/` settings split (`base`, `development`, `production`), modular apps under `apps/`, base URL routing, `ml/`/`api/`/`tests/` structure, foundation tests.
 - **Sprint 1.4 (completed):** PostgreSQL integration — `.env` credentials, Django connected to `landlord_tenant_db`, migrations applied, connectivity and `runserver` verified.
+- **Sprint 1.5 (completed):** Base UI and static/media foundation — `base.html` (Bootstrap 5 navbar + footer, brand **Landlord-Tenant Connect**, blocks for title/content/extra assets), `home.html` and `about.html` extend the base template; localized Bootstrap 5.3.3 + Bootstrap Icons vendored under `static/vendor/`; `css/main.css`; development static/media serving in `config/urls.py`; `collectstatic` verified (163 files). Foundation suite now 12 tests (settings, routing, base UI rendering). Home, About, static assets served over HTTP (200).
 
-Still to come: Sprint 1.5 (base UI, static/media, foundation validation).
-
-Features (authentication, apartments, recommendations, messaging,
-verification, administration) are not yet implemented.
+Foundation (Phase 1) is complete. Features (authentication, apartments,
+recommendations, messaging, verification, administration) are not yet
+implemented.

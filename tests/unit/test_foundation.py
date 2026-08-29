@@ -1,11 +1,11 @@
 """
-Foundation tests for Phase 1, Sprint 1.3.
+Foundation tests for Phase 1, Sprint 1.3/1.5.
 
-These verify the Django project foundation: the settings split and the base
-URL routing. They are intentionally DB-independent (SimpleTestCase) so they
-only verify configuration and routing.
+These verify the Django project foundation: the settings split, the base URL
+routing, and the base UI rendering. They are intentionally DB-independent
+(SimpleTestCase) so they only verify configuration, routing and templates.
 """
-from django.test import SimpleTestCase, override_settings
+from django.test import Client, SimpleTestCase, override_settings
 from django.urls import resolve, reverse
 
 
@@ -54,3 +54,37 @@ class UrlRoutingFoundationTests(SimpleTestCase):
         from django.conf import settings
 
         self.assertTrue(hasattr(settings, "ROOT_URLCONF"))
+
+
+class BaseUiFoundationTests(SimpleTestCase):
+    """Verify the base template, navigation and static wiring render."""
+
+    def setUp(self):
+        # The test client defaults to the ``testserver`` host, which is not in
+        # ALLOWED_HOSTS; ``localhost`` is, so use it explicitly.
+        self.client = Client(HTTP_HOST="localhost")
+
+    def test_home_renders_base_ui(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn("navbar", content)
+        self.assertIn("footer", content)
+        self.assertIn("Landlord-Tenant Connect", content)
+        self.assertIn("bootstrap.min.css", content)
+        self.assertIn("main.css", content)
+
+    def test_about_renders_base_ui(self):
+        response = self.client.get("/about/")
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn("navbar", content)
+        self.assertIn("footer", content)
+        self.assertIn("Landlord-Tenant Connect", content)
+
+    def test_about_url_resolves(self):
+        match = resolve("/about/")
+        self.assertEqual(match.url_name, "about")
+
+    def test_about_reverse(self):
+        self.assertEqual(reverse("about"), "/about/")

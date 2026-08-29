@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}About | Landlord-Tenant Direct Connect{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h1 class="card-title h3">About the Platform</h1>
+                <p>
+                    The <strong>Landlord-Tenant Direct Connect Platform</strong> is an
+                    academic web application designed to facilitate direct contact between
+                    landlords and prospective tenants.
+                </p>
+                <p>Key objectives:</p>
+                <ul>
+                    <li>Allow tenants to search for and filter residential apartments.</li>
+                    <li>Allow landlords to register and manage apartment listings.</li>
+                    <li>Provide tenant apartment preferences and personalised recommendations
+                        using <strong>Weighted K-Nearest Neighbour (Weighted KNN)</strong>.</li>
+                    <li>Enable direct landlord–tenant messaging.</li>
+                    <li>Support an administrative landlord-verification workflow.</li>
+                </ul>
+                <p class="mb-0 small text-muted">
+                    This is an academic prototype. It does not legally verify property
+                    ownership, process payments, or act as a legal authority.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
