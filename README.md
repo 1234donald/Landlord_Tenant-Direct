@@ -25,8 +25,8 @@ This is an academic prototype. It is not a legal property-ownership verification
 
 ## Technology stack
 
-- **Backend:** Python 3.13.x, Django, Django REST Framework
-- **Database:** PostgreSQL
+- **Backend:** Python 3.13.15, Django 6.1, Django REST Framework 3.18
+- **Database:** PostgreSQL 18
 - **Frontend:** HTML5, CSS3, JavaScript, Django Templates, Bootstrap 5
 - **Machine learning:** Weighted KNN with feature weighting (NumPy / pandas / scikit-learn for preprocessing & metrics only)
 - **Environment:** Python virtual environment (`.venv`), environment variables
@@ -85,7 +85,7 @@ landlord_tenant_project/
 
 ## Installation (local development)
 
-> Detailed setup instructions will be completed in later Phase 1 sprints (Django initialisation and PostgreSQL integration). The milestones below reflect the approved plan.
+The project foundation (Sprints 1.1–1.3) is set up. Steps below reflect the current, working setup.
 
 1. Clone the repository and move into the project directory.
 2. Create and activate the virtual environment:
@@ -93,11 +93,14 @@ landlord_tenant_project/
    python -m venv .venv
    .\.venv\Scripts\Activate.ps1
    ```
-3. Install dependencies (list to be finalised in Sprint 1.3):
+3. Install dependencies:
    ```powershell
    pip install -r requirements.txt
    ```
 4. Configure environment variables (see below).
+
+Note: running the Django server and executing DB-backed tests requires the
+live PostgreSQL connection, which is completed in Sprint 1.4.
 
 ## Environment setup
 
@@ -161,7 +164,10 @@ The recommendation engine will operate on actual apartment records stored in the
 
 Phase 1 (Project Foundation and Environment) is in progress.
 - **Sprint 1.1 (completed):** Development environment verified.
-- **Sprint 1.2 (current):** Project and repository initialisation (Git, `.gitignore`, `.env.example`, README).
-- Sprints 1.3–1.5: Django project initialisation, PostgreSQL integration, base UI/static/files foundation.
+- **Sprint 1.2 (completed):** Project and repository initialisation (Git, `.gitignore`, `.env.example`, README, branch strategy).
+- **Sprint 1.3 (completed):** Django project initialisation — virtual environment, approved dependencies installed and pinned, `config/` settings split (`base`, `development`, `production`), modular apps under `apps/`, base URL routing, `ml/`/`api/`/`tests/` structure, foundation tests.
 
-Nothing beyond the repository foundation has been implemented yet.
+Still to come: Sprint 1.4 (PostgreSQL integration), Sprint 1.5 (base UI, static/media, foundation validation).
+
+Features (authentication, apartments, recommendations, messaging,
+verification, administration) are not yet implemented.
