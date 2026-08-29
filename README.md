@@ -217,6 +217,15 @@ Phase 2 (Authentication and User Management) is in progress.
   landlords cannot access admin functions, administrator routes protected.
   13 permission API tests (64 total). **Phase 2 (authentication & user
   management) is complete.**
+- **Sprint 3.1 (completed):** Landlord verification data model — the
+  `VerificationRequest` model in `apps/verification/models.py` supporting the
+  administrative landlord-verification workflow. Fields: `landlord` (required
+  FK to a LANDLORD user), `information`, `status` (PENDING/APPROVED/REJECTED,
+  default PENDING), `remarks`, `submitted_at` (auto), `reviewed_by` (optional FK
+  to the reviewing ADMIN, SET_NULL on deletion), `reviewed_at`, `updated_at`.
+  Registered in Django Admin; migration `verification.0001_initial` applied.
+  It is an administrative platform control only and makes no legal
+  property-ownership claims. 15 model tests (79 total).
 
-Features (apartments, recommendations, messaging, verification,
-administration) are not yet implemented.
+Features (apartments, recommendations, messaging, the verification
+workflow/API, administration) are not yet implemented.
