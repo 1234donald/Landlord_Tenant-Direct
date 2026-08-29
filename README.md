@@ -98,9 +98,9 @@ The project foundation (Sprints 1.1–1.3) is set up. Steps below reflect the cu
    pip install -r requirements.txt
    ```
 4. Configure environment variables (see below).
-
-Note: running the Django server and executing DB-backed tests requires the
-live PostgreSQL connection, which is completed in Sprint 1.4.
+   Ensure `.env` contains the PostgreSQL `DATABASE_USER`, `DATABASE_PASSWORD`,
+   and `DATABASE_NAME` values so the Django development server can connect to
+   `landlord_tenant_db`.
 
 ## Environment setup
 
@@ -117,7 +117,11 @@ Never commit `.env`. Use `.env.example` as the template without real credentials
 
 ## Database setup
 
-> PostgreSQL integration is completed in Sprint 1.4. Expected development database: `landlord_tenant_db` (host `127.0.0.1:5432`).
+Development database: `landlord_tenant_db` (PostgreSQL, host `127.0.0.1:5432`).
+Connection values are supplied exclusively through `.env` (see `.env.example`).
+
+The Django-to-PostgreSQL connection is verified; Django's built-in migrations
+(admin, auth, contenttypes, sessions) are applied.
 
 ## Migrations
 
@@ -166,8 +170,9 @@ Phase 1 (Project Foundation and Environment) is in progress.
 - **Sprint 1.1 (completed):** Development environment verified.
 - **Sprint 1.2 (completed):** Project and repository initialisation (Git, `.gitignore`, `.env.example`, README, branch strategy).
 - **Sprint 1.3 (completed):** Django project initialisation — virtual environment, approved dependencies installed and pinned, `config/` settings split (`base`, `development`, `production`), modular apps under `apps/`, base URL routing, `ml/`/`api/`/`tests/` structure, foundation tests.
+- **Sprint 1.4 (completed):** PostgreSQL integration — `.env` credentials, Django connected to `landlord_tenant_db`, migrations applied, connectivity and `runserver` verified.
 
-Still to come: Sprint 1.4 (PostgreSQL integration), Sprint 1.5 (base UI, static/media, foundation validation).
+Still to come: Sprint 1.5 (base UI, static/media, foundation validation).
 
 Features (authentication, apartments, recommendations, messaging,
 verification, administration) are not yet implemented.
