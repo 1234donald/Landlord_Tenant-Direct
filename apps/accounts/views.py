@@ -7,7 +7,7 @@ from rest_framework_simplejwt.serializers import (
     TokenRefreshSerializer,
 )
 
-from .serializers import LoginSerializer, RegisterSerializer
+from .serializers import LoginSerializer, ProfileSerializer, RegisterSerializer
 
 
 class RegisterView(APIView):
@@ -154,9 +154,11 @@ class LogoutView(APIView):
 
 
 class MeView(APIView):
-    """Return the profile of the currently authenticated user.
+    """Return and update the profile of the currently authenticated user.
 
-    This endpoint requires a valid Bearer access token.
+    This endpoint requires a valid Bearer access token. ``GET`` returns the
+    profile; ``PATCH`` allows the user to edit their own contact/profile
+    details (``full_name`` and ``phone``).
     """
 
     def get(self, request):
@@ -174,4 +176,27 @@ class MeView(APIView):
                 },
             },
             status=status.HTTP_200_OK,
+        )
+
+    def patch(self, request):
+        serializer = ProfileSerializer(
+            request.user, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Profile updated.",
+                    "data": serializer.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {
+                "success": False,
+                "message": "Profile update failed.",
+                "errors": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
         )

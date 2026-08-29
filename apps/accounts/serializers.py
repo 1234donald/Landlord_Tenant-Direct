@@ -55,6 +55,21 @@ class RegisterSerializer(serializers.Serializer):
         }
 
 
+class ProfileSerializer(serializers.ModelSerializer):
+    """View and update the authenticated user's own profile.
+
+    Only contact/profile details that the user may change themselves are
+    editable: ``full_name`` and ``phone``. Email (identity), role and
+    activation status are read-only and cannot be altered through this
+    endpoint.
+    """
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "full_name", "phone", "role", "is_active"]
+        read_only_fields = ["id", "email", "role", "is_active"]
+
+
 class LoginSerializer(serializers.Serializer):
     """Authenticate a user by email and password and issue JWT tokens."""
 

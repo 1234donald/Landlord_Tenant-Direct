@@ -200,6 +200,13 @@ Phase 2 (Authentication and User Management) is in progress.
   `REST_FRAMEWORK` defaults to JWT + `IsAuthenticated`; `SIMPLE_JWT` configured
   (60-min access, no rotation/blacklist-after-rotation). Invalid/blacklisted
   tokens return clean 401 responses. 9 authentication API tests (44 total).
+- **Sprint 2.4 (completed):** Profile management — the protected `GET/PATCH
+  /api/v1/auth/me/` endpoint now supports viewing (`GET`) and editing
+  (`PATCH`) the authenticated user's own profile. Contact information
+  (`full_name`, `phone`) is editable for both TENANT and LANDLORD roles;
+  identity fields (email, role, is_active) are read-only and cannot be changed
+  by the user. Uses a `ProfileSerializer` (ModelSerializer) with server-side
+  validation. 7 profile API tests (51 total).
 
 Features (apartments, recommendations, messaging, verification,
 administration) are not yet implemented.
