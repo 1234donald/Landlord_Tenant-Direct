@@ -53,8 +53,9 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "drf_spectacular",
-    # Project apps (created in later phases; registered as modules become ready)
+    # Project apps
     "apps.core",
+    "apps.accounts",
 ]
 
 MIDDLEWARE = [
@@ -105,6 +106,11 @@ DATABASES = {
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ---------------------------------------------------------------------------
+# Custom user model (apps.accounts)
+# ---------------------------------------------------------------------------
+AUTH_USER_MODEL = "accounts.User"
 
 # ---------------------------------------------------------------------------
 # Password validation
