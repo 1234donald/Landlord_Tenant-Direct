@@ -207,6 +207,16 @@ Phase 2 (Authentication and User Management) is in progress.
   identity fields (email, role, is_active) are read-only and cannot be changed
   by the user. Uses a `ProfileSerializer` (ModelSerializer) with server-side
   validation. 7 profile API tests (51 total).
+- **Sprint 2.5 (completed):** Permissions and role-based access — four reusable
+  permission classes in `apps/accounts/permissions.py`: `IsTenant`, `IsLandlord`,
+  `IsAdmin` and `IsOwnerOrAdmin`. Protected role-scoped endpoints under
+  `/api/v1/accounts/` enforce RBAC: `tenant/` (IsTenant), `landlord/`
+  (IsLandlord), `users/` admin-only user list (IsAdmin), and `users/{pk}/`
+  (IsOwnerOrAdmin — a user may view only their own profile or an admin any).
+  Phase exit criteria verified: tenants cannot access landlord/admin functions,
+  landlords cannot access admin functions, administrator routes protected.
+  13 permission API tests (64 total). **Phase 2 (authentication & user
+  management) is complete.**
 
 Features (apartments, recommendations, messaging, verification,
 administration) are not yet implemented.

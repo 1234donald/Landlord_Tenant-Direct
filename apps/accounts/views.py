@@ -1,4 +1,6 @@
-from rest_framework import status
+from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
@@ -7,6 +9,7 @@ from rest_framework_simplejwt.serializers import (
     TokenRefreshSerializer,
 )
 
+from .permissions import IsAdmin, IsLandlord, IsOwnerOrAdmin, IsTenant
 from .serializers import LoginSerializer, ProfileSerializer, RegisterSerializer
 
 
@@ -199,4 +202,108 @@ class MeView(APIView):
                 "errors": serializer.errors,
             },
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class TenantAreaView(APIView):
+    """Protected tenant-only endpoint.
+
+    Demonstrates the ``IsTenant`` role permission. Returns the authenticated
+    tenant's own profile. Expanded into the full tenant dashboard in later
+    phases.
+    """
+
+    permission_classes = [IsTenant]
+
+    def get(self, request):
+        return Response(
+            {
+                "success": True,
+                "message": "Tenant area accessible.",
+                "data": {
+                    "id": request.user.pk,
+                    "email": request.user.email,
+                    "full_name": request.user.full_name,
+                    "phone": request.user.phone or "",
+                    "role": request.user.role,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class LandlordAreaView(APIView):
+    """Protected landlord-only endpoint.
+
+    Demonstrates the ``IsLandlord`` role permission. Returns the authenticated
+    landlord's own profile. Expanded into the full landlord dashboard in later
+    phases.
+    """
+
+    permission_classes = [IsLandlord]
+
+    def get(self, request):
+        return Response(
+            {
+                "success": True,
+                "message": "Landlord area accessible.",
+                "data": {
+                    "id": request.user.pk,
+                    "email": request.user.email,
+                    "full_name": request.user.full_name,
+                    "phone": request.user.phone or "",
+                    "role": request.user.role,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class UserListView(generics.ListAPIView):
+    """List all registered users (administrator only).
+
+    Backs the administrative "manage users" function. Returns real records
+    from the database.
+    """
+
+    permission_classes = [IsAdmin]
+    serializer_class = ProfileSerializer
+    queryset = get_user_model().objects.all()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            {
+                "success": True,
+                "message": "Users retrieved.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class UserDetailView(generics.RetrieveAPIView):
+    """View a single user's profile.
+
+    Uses ``IsOwnerOrAdmin``: a user may view their own profile, or any
+    administrator may view any profile.
+    """
+
+    permission_classes = [IsOwnerOrAdmin]
+    serializer_class = ProfileSerializer
+
+    def get_queryset(self):
+        return get_user_model().objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(
+            {
+                "success": True,
+                "message": "User retrieved.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
         )
