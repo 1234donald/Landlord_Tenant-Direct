@@ -192,6 +192,14 @@ Phase 2 (Authentication and User Management) is in progress.
   duplicate-account prevention, Django password validation, role restriction
   (ADMIN rejected — created administratively only), password hashing, and a
   consistent `success/message/data` response envelope. 9 registration API tests.
+- **Sprint 2.3 (completed):** Authentication — JWT login (`POST
+  /api/v1/auth/login/`) returning access (60 min) and refresh (1 day) tokens,
+  `POST /api/v1/auth/refresh/` to mint a fresh access token, server-side logout
+  (`POST /api/v1/auth/logout/`) that blacklists the refresh token via SimpleJWT
+  `token_blacklist`, and a protected `GET /api/v1/auth/me/` profile endpoint.
+  `REST_FRAMEWORK` defaults to JWT + `IsAuthenticated`; `SIMPLE_JWT` configured
+  (60-min access, no rotation/blacklist-after-rotation). Invalid/blacklisted
+  tokens return clean 401 responses. 9 authentication API tests (44 total).
 
-Features (login/JWT, apartments, recommendations, messaging,
-verification, administration) are not yet implemented.
+Features (apartments, recommendations, messaging, verification,
+administration) are not yet implemented.
