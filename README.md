@@ -224,8 +224,32 @@ Phase 2 (Authentication and User Management) is in progress.
   default PENDING), `remarks`, `submitted_at` (auto), `reviewed_by` (optional FK
   to the reviewing ADMIN, SET_NULL on deletion), `reviewed_at`, `updated_at`.
   Registered in Django Admin; migration `verification.0001_initial` applied.
-  It is an administrative platform control only and makes no legal
-  property-ownership claims. 15 model tests (79 total).
+   It is an administrative platform control only and makes no legal
+   property-ownership claims. 15 model tests (79 total).
+- **Sprint 3.2 (completed):** Landlord verification workflow — the Verification
+  API (§24.6) implemented in `apps/verification/`:
+  `POST /api/v1/verification/submit/` (landlord submission, blocks a duplicate
+  while a request is PENDING, validates non-blank information within 5000 chars),
+  `GET /api/v1/verification/status/` (landlord views own requests), and the
+  admin review endpoints `GET /api/v1/admin/verifications/` (list + validated
+  `?status=` filter), `POST /api/v1/admin/verifications/{id}/approve/` and
+  `.../{id}/reject/` (only PENDING requests can be reviewed; remarks validated
+  for rejections). Role-based access enforced via `IsLandlord`/`IsAdmin`.
+  `VerificationRequest.approve(admin)` / `.reject(admin, remarks)` domain methods
+  implement the state transitions. 19 verification API tests (98 total).
+- **Sprint 3.3 (completed):** Apartment data model — the `Apartment` model in
+  `apps/apartments/models.py` representing landlord apartment listings with:
+  `landlord` (required FK to a LANDLORD user), `title`, `description`, `location`,
+  `address`, `rental_price` (positive decimal), `apartment_type`
+  (Self-contained / One / Two / Three-bedroom / Flat / Duplex), `bedrooms` and
+  `bathrooms` (positive counts), facility flags (`parking`, `electricity`, `water`,
+  `security`, `furnished`) plus a free-text `additional_facilities` field, and an
+  `availability` flag, with `created_at`/`updated_at` timestamps. Validation
+  (via `clean()`) enforces a positive rental price and valid bedroom/bathroom
+  counts. Indexes cover `location`, `rental_price`, `apartment_type`, `landlord`
+  and `availability` for search/filtering. Registered in Django Admin; migration
+  `apartments.0001_initial` applied. 16 model tests (114 total).
 
-Features (apartments, recommendations, messaging, the verification
-workflow/API, administration) are not yet implemented.
+Features (apartment CRUD/API, search, recommendations, messaging) are not yet
+implemented; the verification workflow/API and the apartment data model are
+complete.
