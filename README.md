@@ -398,9 +398,23 @@ Phase 2 (Authentication and User Management) is in progress.
    dimensions pass through unchanged and missing (`None`) tenant values are
    preserved. 15 normalisation tests (342 total), including known-value cases;
    no database changes.
+- **Sprint 5.4 (completed):** Feature weighting and weighted distance — the
+   weighted-distance engine in `ml/weighted_knn.py`. It resolves the effective
+   feature weights (`resolve_weights`: Sprint 5.1 defaults or a validated
+   override) and computes the weighted Euclidean distance
+   `Dw(U,A) = sqrt(Σ wi·(ui − ai)²)`. The categorical `apartment_type` maps
+   back to its base weight when a type is stated; unstated (missing)
+   preferences are neutralised at weighting time via the Sprint 5.2 `active`
+   mask (or a `None` value), so out-of-scope dimensions never inflate the
+   distance. A bounded `similarity` helper (exponential decay of the distance)
+   provides an interpretive "preference match" score for display. 18
+   weighted-distance tests (360 total), including known-value mathematical
+   cases (identity → 0, single-dimension weights, custom weights, type match
+   vs mismatch); no database changes.
 
-Sprint 5.3 completes the recommendation numerical normalisation layer. Raw
-encoded values are rescaled reproducibly and safely into a common frame for
-comparison. The weighted distance (Sprint 5.4), ranking (Sprint 5.5),
+Sprint 5.4 completes the recommendation weighted-distance engine. A tenant
+query vector and each apartment candidate can now be compared by a weighted
+similarity score that honours stated preferences and configuration. Candidate
+selection, hard filtering, K-selection and ascending ranking (Sprint 5.5),
 evaluation and the recommendation API/UI remain in this phase; frontend
 dashboards and administration are later phases.
