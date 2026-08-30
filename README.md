@@ -283,7 +283,17 @@ Phase 2 (Authentication and User Management) is in progress.
    page listing a landlord's own apartments (admins may view all, tenants are
    forbidden). The browse page filters out unavailable listings. 19 module tests
    (166 total); no database changes were required.
+- **Sprint 4.1 (completed):** Apartment search — a public
+   `GET /api/v1/apartments/` endpoint (added to `ApartmentListCreateView`) that
+   performs basic search by location (case-insensitive), apartment type (exact,
+   validated against the allowed types), rental price (optional `min_price` /
+   `max_price`) and bedroom/bathroom count, with the ability to combine any of
+   these criteria. Invalid parameter values return a 400 with field-specific
+   errors rather than silently returning misleading results, and the response
+   uses the standard list envelope. The presentation browse page
+   (`/apartments/`) gained a matching search form wired to the same filters.
+   18 search tests (184 total); no database changes were required.
 
-Features (search, recommendations, messaging) are not yet implemented; the
+Features (recommendations, messaging) are not yet implemented; the
 verification workflow/API and apartment creation, media, management
-(update, delete, availability) and presentation are complete.
+(update, delete, availability), presentation and search are complete.

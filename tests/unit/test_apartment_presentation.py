@@ -102,6 +102,21 @@ class ApartmentBrowseListTests(TestCase):
         content = response.content.decode()
         self.assertIn("View details", content)
 
+    def test_list_search_filters_by_location(self):
+        make_apartment(self.landlord, title="Calabar Flat", location="Calabar")
+        make_apartment(self.landlord, title="Uyo Flat", location="Uyo")
+        response = self.client.get(reverse("apartment-list"), {"location": "uyo"})
+        content = response.content.decode()
+        self.assertIn("Uyo Flat", content)
+        self.assertNotIn("Calabar Flat", content)
+
+    def test_list_search_renders_search_form(self):
+        response = self.client.get(reverse("apartment-list"))
+        content = response.content.decode()
+        self.assertIn('name="location"', content)
+        self.assertIn('name="max_price"', content)
+        self.assertIn('name="bedrooms"', content)
+
 
 class ApartmentDetailPageTests(TestCase):
     def setUp(self):

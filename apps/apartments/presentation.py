@@ -1,4 +1,5 @@
-"""HTML presentation views for the Apartment module (Phase 3, Sprint 3.6).
+"""HTML presentation views for the Apartment module (Phase 3, Sprint 3.6; Phase
+4, Sprint 4.1).
 
 These form the read-oriented presentation layer (AGENTS 6): a public apartment
 browsing page rendered as apartment cards, a full apartment detail page showing
@@ -7,16 +8,18 @@ listing a landlord's own apartments. They are separate from the REST API views
 in ``apps.apartments.views``.
 """
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse
 from django.views.generic import DetailView, ListView
 
 from .models import Apartment
+from .views import build_search_queryset
 
 
 class ApartmentBrowseView(ListView):
     """Public list of available apartments rendered as cards.
 
-    Only apartments currently available (``availability=True``) are shown so a
+    Supports the Sprint 4.1 basic search criteria supplied through the query
+    string (location, apartment type, price, bedrooms, bathrooms). Only
+    apartments currently available (``availability=True``) are shown so a
     listing that is unavailable is not presented to prospective tenants.
     """
 
@@ -25,9 +28,18 @@ class ApartmentBrowseView(ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        return Apartment.objects.filter(availability=True).prefetch_related(
-            "images"
-        )
+        try:
+            queryset = build_search_queryset(self.request.GET)
+        except ValueError:
+            # A malformed search should not break browsing; fall back to all
+            # available listings.
+            queryset = Apartment.objects.all()
+        return queryset.filter(availability=True).prefetch_related("images")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["apartment_types"] = Apartment.ApartmentType.choices
+        return context
 
 
 class ApartmentDetailPageView(DetailView):

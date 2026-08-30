@@ -107,7 +107,7 @@ class ApartmentCreateSerializer(_ApartmentBaseSerializer):
 
     The owning landlord is taken from the authenticated request and is never
     accepted from the client. Image files are validated and attached by the
-    view (see ``ApartmentCreateView``).
+    view (see ``ApartmentListCreateView``).
     """
 
     def validate(self, attrs):
