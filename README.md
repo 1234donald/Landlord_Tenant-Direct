@@ -470,11 +470,28 @@ Phase 2 (Authentication and User Management) is in progress.
     13 integration tests (plus 20 access-control subtests) verify role
     enforcement and that all overview figures come from the real database (439
     total); no database changes.
+- **Sprint 6.2 (completed):** complete administrative workflows — the granular
+    admin actions behind the Sprint 6.1 console using server-side, CSRF-protected
+    POST views in `apps/admin_dashboard` (consistent with the server-rendered
+    console; FR-005, §40, AGENTS 42). User status management (`UserStatusActionView`
+    toggles `is_active` to enable/disable accounts; administrator accounts are
+    never toggled), apartment moderation (`ApartmentModerationView` hides/unhides
+    a listing by toggling `availability`, preserving the record to cover the
+    "remove inappropriate listings" requirement safely), and verification
+    administration (`VerificationActionView` approves/rejects via the model's
+    `approve`/`reject`, so only pending requests can be reviewed). A new
+    `ReportsView` page aggregates live system figures — users by role, active
+    accounts, listings availability, verification funnel, and messaging volume —
+    computed from the real database (nothing fabricated, AGENTS 39). All action
+    views are ADMIN-only (403 otherwise, 405 on GET). 16 integration tests (plus
+    12 access-control subtests) verify role enforcement, state-change behaviour,
+    non-pending re-review protection and report counts (455 total); no database
+    changes.
 
-Sprint 6.1 delivers the administrative dashboard that closes most of the admin
-management entry points. This kicks off Phase 6 (Administration, Security and
-System Integration); the granular moderation workflows (approve/reject, listing
-moderation, reports) follow in Sprint 6.2.
+Sprint 6.2 delivers the complete administrative workflow (user status, apartment
+moderation, verification review and administrative reports), closing out the
+Phase 6 administration requirements. Sprint 6.3 proceeds to the remaining Phase
+6 work (security hardening and system integration).
 
 Sprint 5.4 completes the recommendation weighted-distance engine. A tenant
 query vector and each apartment candidate can now be compared by a weighted

@@ -38,6 +38,14 @@
                     {% else %}
                     <span class="badge text-bg-secondary">Unavailable</span>
                     {% endif %}
+                    <form method="post" action="{% url 'admin_dashboard:apartment-moderate' apartment.pk %}"
+                          class="d-inline-block ms-1">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="btn btn-sm {% if apartment.availability %}btn-outline-secondary{% else %}btn-outline-success{% endif %}">
+                            {% if apartment.availability %}Hide{% else %}Unhide{% endif %}
+                        </button>
+                    </form>
                 </td>
             </tr>
             {% empty %}

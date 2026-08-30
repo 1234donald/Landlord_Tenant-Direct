@@ -1,7 +1,7 @@
-"""Administrator dashboard presentation views (Phase 6, Sprint 6.1).
+"""Administrator dashboard presentation views (Phase 6, Sprints 6.1-6.2).
 
-Sprint 6.1 delivers the **Administrator dashboard** (SYSTEM_REQUIREMENTS §40,
-FR-005; AGENTS 42). Admin-only HTML pages provide a system overview and
+Sprint 6.1 delivered the **Administrator dashboard** (SYSTEM_REQUIREMENTS §40,
+FR-005; AGENTS 42): admin-only HTML pages providing a system overview and
 management entry points:
 
 - ``DashboardView``           - system overview with cross-module counts;
@@ -10,14 +10,26 @@ management entry points:
 - ``ApartmentManagementView`` - apartment management overview (all listings);
 - ``VerificationOverviewView`` - verification workflow overview (by status).
 
-These are presentation-side overviews; the granular moderation actions
-(approve/reject, delete, status changes, reports) belong to Sprint 6.2. Every
-view is guarded by ``AdminOnlyMixin`` so only the ADMINISTRATOR role can reach
-them (AGENTS 8, 19); landlords and tenants are blocked with a 403.
+Sprint 6.2 completes the **administrative workflows** behind those pages:
+
+- ``UserStatusActionView``    - user status management (activate/deactivate);
+- ``ApartmentModerationView`` - apartment moderation (hide/unhide a listing);
+- ``VerificationActionView``  - verification administration (approve/reject);
+- ``ReportsView``             - administrative reports (system aggregates).
+
+Every view is guarded by ``AdminOnlyMixin`` so only the ADMINISTRATOR role can
+reach them (AGENTS 8, 19); landlords, tenants and anonymous users are blocked
+with a 403. State changes reuse the model logic (``User.is_active``,
+``Apartment.availability``, ``VerificationRequest.approve/reject``) so there is
+no duplicated business logic in the presentation layer (AGENTS 6).
 """
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect
+from django.utils.decorators import method_decorator
+from django.views.decorators.http import require_POST
 from django.views.generic import ListView, TemplateView
 
 from apps.apartments.models import Apartment
@@ -183,4 +195,139 @@ class VerificationOverviewView(AdminOnlyMixin, ListView):
             "status", VerificationRequest.Status.PENDING
         )
         context["status_choices"] = VerificationRequest.Status.choices
+        return context
+
+
+class UserStatusActionView(AdminOnlyMixin, TemplateView):
+    """Toggle an account's active status (user status management).
+
+    ``POST`` flips ``is_active`` for the target user so an administrator can
+    enable or disable an account (FR-005 "manage users"). Disabling prevents
+    the user from authenticating while preserving their data. The target is a
+    normal (non-admin) account; administrators are never deactivated through
+    this action.
+    """
+
+    @method_decorator(require_POST)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        if user.is_admin:
+            messages.error(request, "Administrator accounts cannot be toggled here.")
+            return redirect("admin_dashboard:users")
+        user.is_active = not user.is_active
+        user.save(update_fields=["is_active", "updated_at"])
+        state = "enabled" if user.is_active else "disabled"
+        messages.success(request, f"User {user.email} {state}.")
+        return redirect("admin_dashboard:users")
+
+
+class ApartmentModerationView(AdminOnlyMixin, TemplateView):
+    """Moderate an apartment listing (set availability).
+
+    ``POST`` hides or unhides a listing by toggling ``availability``. Hiding
+    (unavailable) removes it from tenant search and recommendation candidates
+    while preserving the record, which safely covers the FR-005 "remove
+    inappropriate listings" requirement without destructive deletion.
+    """
+
+    @method_decorator(require_POST)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, pk):
+        apartment = get_object_or_404(Apartment, pk=pk)
+        apartment.availability = not apartment.availability
+        apartment.save(update_fields=["availability", "updated_at"])
+        state = "made available" if apartment.availability else "hidden (unavailable)"
+        messages.success(request, f"Listing '{apartment.title}' {state}.")
+        return redirect("admin_dashboard:apartments")
+
+
+class VerificationActionView(AdminOnlyMixin, TemplateView):
+    """Review a verification request (verification administration).
+
+    ``POST`` approves or rejects a pending request, delegating to the model's
+    ``approve`` / ``reject`` methods so the persisted state and timestamps stay
+    consistent with the API workflow (Sprint 3.2). Rejection accepts an optional
+    ``remarks`` field. An already-reviewed request cannot be re-reviewed.
+    """
+
+    @method_decorator(require_POST)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, pk):
+        verification = get_object_or_404(VerificationRequest, pk=pk)
+        action = request.POST.get("action")
+        if not verification.is_pending:
+            messages.error(request, "Only pending requests can be reviewed.")
+            return redirect("admin_dashboard:verifications")
+
+        if action == "approve":
+            verification.approve(admin=request.user)
+            messages.success(request, "Verification approved.")
+        elif action == "reject":
+            remarks = request.POST.get("remarks", "").strip()
+            verification.reject(admin=request.user, remarks=remarks)
+            messages.success(request, "Verification rejected.")
+        else:
+            messages.error(request, "Unknown review action.")
+        return redirect("admin_dashboard:verifications")
+
+
+class ReportsView(AdminOnlyMixin, TemplateView):
+    """Administrative reports page (FR-005 "access administrative reports").
+
+    Aggregates live database figures into management reports: user breakdown by
+    role, listing availability, verification funnel and messaging volume. Every
+    number is computed from the real database; nothing is fabricated (AGENTS
+    39).
+    """
+
+    template_name = "admin_dashboard/reports.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        role_counts = dict(
+            User.objects.values_list("role").annotate(total=Count("id"))
+        )
+        verification_counts = dict(
+            VerificationRequest.objects.values_list("status").annotate(
+                total=Count("id")
+            )
+        )
+        context.update(
+            {
+                "role_counts": {
+                    User.Role.TENANT: role_counts.get(User.Role.TENANT, 0),
+                    User.Role.LANDLORD: role_counts.get(User.Role.LANDLORD, 0),
+                    User.Role.ADMIN: role_counts.get(User.Role.ADMIN, 0),
+                },
+                "active_users": User.objects.filter(is_active=True).count(),
+                "inactive_users": User.objects.filter(is_active=False).count(),
+                "apartments_total": Apartment.objects.count(),
+                "apartments_available": Apartment.objects.filter(
+                    availability=True
+                ).count(),
+                "apartments_hidden": Apartment.objects.filter(
+                    availability=False
+                ).count(),
+                "verification_counts": {
+                    VerificationRequest.Status.PENDING: verification_counts.get(
+                        VerificationRequest.Status.PENDING, 0
+                    ),
+                    VerificationRequest.Status.APPROVED: verification_counts.get(
+                        VerificationRequest.Status.APPROVED, 0
+                    ),
+                    VerificationRequest.Status.REJECTED: verification_counts.get(
+                        VerificationRequest.Status.REJECTED, 0
+                    ),
+                },
+                "conversation_count": Conversation.objects.count(),
+                "message_count": Message.objects.count(),
+            }
+        )
         return context

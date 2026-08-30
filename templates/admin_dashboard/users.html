@@ -48,6 +48,15 @@
                     {% else %}
                     <span class="badge text-bg-secondary">Inactive</span>
                     {% endif %}
+                    {% if u.is_admin == False %}
+                    <form method="post" action="{% url 'admin_dashboard:user-status' u.pk %}"
+                          class="d-inline d-inline-block ms-1">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                            {% if u.is_active %}Disable{% else %}Enable{% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
                 </td>
                 <td>{{ u.date_joined|date:"j M Y" }}</td>
             </tr>

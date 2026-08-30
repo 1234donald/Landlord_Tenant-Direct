@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Administrative Reports | Landlord-Tenant Direct Connect{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'admin_dashboard:dashboard' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Dashboard
+    </a>
+    <h1 class="mt-2"><i class="bi bi-graph-up me-2"></i>Administrative Reports</h1>
+    <p class="text-muted">
+        Live management figures computed from the platform database.
+    </p>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">Users</div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Tenants</span><span>{{ role_counts.TENANT }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Landlords</span><span>{{ role_counts.LANDLORD }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Administrators</span><span>{{ role_counts.ADMIN }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Active accounts</span><span>{{ active_users }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Disabled accounts</span><span>{{ inactive_users }}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">Apartments</div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Total listings</span><span>{{ apartments_total }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Available</span><span>{{ apartments_available }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Hidden (unavailable)</span><span>{{ apartments_hidden }}</span>
+                </li>
+            </ul>
+            <div class="card-header mt-2">Verification funnel</div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Pending</span><span>{{ verification_counts.PENDING }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Approved</span><span>{{ verification_counts.APPROVED }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Rejected</span><span>{{ verification_counts.REJECTED }}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Messaging</div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Conversations</span><span>{{ conversation_count }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Messages</span><span>{{ message_count }}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
