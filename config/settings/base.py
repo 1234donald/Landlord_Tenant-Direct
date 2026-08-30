@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.verification",
     "apps.apartments",
+    "apps.recommendations",
 ]
 
 MIDDLEWARE = [

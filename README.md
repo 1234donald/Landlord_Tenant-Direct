@@ -305,8 +305,23 @@ Phase 2 (Authentication and User Management) is in progress.
    The presentation browse page (`/apartments/`) gained matching facility
    checkboxes in its search form. 14 filter/pagination tests (198 total); no
    database changes were required.
+- **Sprint 4.3 (completed):** Tenant preference data model — the
+   `Preference` model (`apps/recommendations/models.py`) persists a tenant's
+   apartment preferences and forms the future Weighted KNN query vector
+   ``U``. Each preference belongs to a TENANT user
+   (`tenant` FK, `related_name="preferences"`, mirroring the
+   `Apartment.landlord` relationship) and stores the preferred `location`,
+   `max_rent` (maximum rental price), `apartment_type` (same choices as
+   `Apartment`), `bedrooms`, `bathrooms`, facility preferences (`parking`,
+   `electricity`, `water`, `security`, `furnished`) and `additional_facilities`.
+   Facility preferences are nullable booleans so a tenant can express required /
+   not-required / no-preference. Model validation enforces a positive
+   `max_rent` and bedroom/bathroom counts of at least 1, matching the
+   `Apartment` validation. The model is registered in Django admin and
+   migrated to PostgreSQL. 15 model tests (213 total).
 
 Features (recommendations, messaging) are not yet implemented; the
 verification workflow/API and apartment creation, media, management
-(update, delete, availability), presentation, search and combined filtering
-are complete.
+(update, delete, availability), presentation, search, combined filtering
+and the persistent tenant-preference model are complete. Preference
+management via API/UI is planned for a later sprint.
