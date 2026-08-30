@@ -319,9 +319,36 @@ Phase 2 (Authentication and User Management) is in progress.
    `max_rent` and bedroom/bathroom counts of at least 1, matching the
    `Apartment` validation. The model is registered in Django admin and
    migrated to PostgreSQL. 15 model tests (213 total).
+- **Sprint 4.4 (completed):** Tenant preference management — the
+   Preference API implemented in `apps/recommendations/`:
+   `GET/POST /api/v1/preferences/` (list / create, TENANT role) and
+   `GET/PATCH/DELETE /api/v1/preferences/{id}/`
+   (retrieve / update / delete, owner-or-admin via
+   `IsPreferenceOwnerOrAdmin`). Ownership is always the authenticated
+   tenant and is never client-supplied. A service layer
+   (`apps/recommendations/services.py`) keeps business logic out of views
+   and prepares the stored preference as recommendation-ready query data
+   (the future Weighted KNN vector `U`), without performing any similarity
+   calculation. 31 preference tests (244 total); no database changes.
+- **Sprint 4.5 (completed):** Messaging and conversations — the
+   tenant–landlord messaging module in `apps/messaging/`:
+   `Conversation` and `Message` models (a conversation links one TENANT and
+   one LANDLORD with a unique pair, and a message records sender, recipient,
+   body, `SENT`/`READ` status and timestamps; migration
+   `messaging.0001_initial` applied). The API (§24.5):
+   `GET/POST /api/v1/messages/` (list own / send, creating or reusing the
+   tenant-landlord conversation), `GET /api/v1/messages/{id}/`,
+   `GET/POST /api/v1/conversations/` (list own / create),
+   `GET /api/v1/conversations/{id}/` (history) and
+   `POST /api/v1/conversations/{id}/messages/` (reply). Access is private
+   to the two participants or an administrator; retrieving a conversation
+   marks the recipient's incoming messages as `READ`. A landlord or another
+   tenant can never read or send in a conversation they do not belong to.
+   Registered in Django admin. 45 messaging tests (289 total).
 
-Features (recommendations, messaging) are not yet implemented; the
-verification workflow/API and apartment creation, media, management
-(update, delete, availability), presentation, search, combined filtering
-and the persistent tenant-preference model are complete. Preference
-management via API/UI is planned for a later sprint.
+Messaging and tenant-preference management are now complete. The
+verification workflow/API, apartment creation, media, management (update,
+delete, availability), presentation, search, combined filtering, the
+persistent tenant-preference model and preference management are done.
+The Weighted KNN recommendation component, recommendation API/UI, and the
+broader frontend dashboards are planned for later phases.

@@ -22,6 +22,13 @@ from apps.apartments.views import (
     ApartmentDetailView,
     ApartmentListCreateView,
 )
+from apps.messaging.views import (
+    ConversationDetailView,
+    ConversationListCreateView,
+    ConversationMessageCreateView,
+    MessageDetailView,
+    MessageListCreateView,
+)
 from apps.recommendations.views import (
     PreferenceDetailView,
     PreferenceListCreateView,
@@ -96,5 +103,30 @@ urlpatterns = [
         "preferences/<int:pk>/",
         PreferenceDetailView.as_view(),
         name="preference-detail",
+    ),
+    path(
+        "messages/",
+        MessageListCreateView.as_view(),
+        name="message-list",
+    ),
+    path(
+        "messages/<int:pk>/",
+        MessageDetailView.as_view(),
+        name="message-detail",
+    ),
+    path(
+        "conversations/",
+        ConversationListCreateView.as_view(),
+        name="conversation-list",
+    ),
+    path(
+        "conversations/<int:pk>/",
+        ConversationDetailView.as_view(),
+        name="conversation-detail",
+    ),
+    path(
+        "conversations/<int:pk>/messages/",
+        ConversationMessageCreateView.as_view(),
+        name="conversation-message-create",
     ),
 ]
