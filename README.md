@@ -345,10 +345,22 @@ Phase 2 (Authentication and User Management) is in progress.
    marks the recipient's incoming messages as `READ`. A landlord or another
    tenant can never read or send in a conversation they do not belong to.
    Registered in Django admin. 45 messaging tests (289 total).
+- **Sprint 4.6 (completed):** Tenant journey integration — end-to-end
+   tenant-flow integration tests in `tests/integration/test_tenant_journey.py`
+   chain the Phase 4 modules into one working journey
+   (`Tenant → Search → Filter → View Apartment → Save Preferences →
+   Contact Landlord → Messages`). Each test drives the real HTTP API and
+   presentation pages: a tenant registers and logs in, a landlord creates
+   listings, the tenant searches and filters, views apartment details, saves
+   preferences, contacts the landlord, and reads/replies within the
+   conversation. This verifies that authentication, apartment search/filter/
+   details, tenant preferences and messaging interoperate correctly and that
+   the Sprint 4.6 phase exit criteria are satisfied. No new UI was built here
+   (frontend dashboards are later-phase work). 4 integration tests (293 total
+   across the suite at this point); no database changes were required.
 
-Messaging and tenant-preference management are now complete. The
-verification workflow/API, apartment creation, media, management (update,
-delete, availability), presentation, search, combined filtering, the
-persistent tenant-preference model and preference management are done.
-The Weighted KNN recommendation component, recommendation API/UI, and the
-broader frontend dashboards are planned for later phases.
+Sprint 4.6 completes Phase 4 (Tenant Search, Preferences and
+Communication). Search, filtering, apartment details, tenant preferences,
+messaging and the end-to-end tenant journey are all working. The Weighted
+KNN recommendation component (Phase 5), recommendation API/UI, the broader
+frontend dashboards and administration are planned for later phases.
