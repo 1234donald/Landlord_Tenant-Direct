@@ -22,6 +22,10 @@ from apps.apartments.views import (
     ApartmentDetailView,
     ApartmentListCreateView,
 )
+from apps.recommendations.views import (
+    PreferenceDetailView,
+    PreferenceListCreateView,
+)
 from apps.verification.views import (
     AdminVerificationApproveView,
     AdminVerificationListView,
@@ -82,5 +86,15 @@ urlpatterns = [
         "apartments/<int:pk>/",
         ApartmentDetailView.as_view(),
         name="apartment-detail",
+    ),
+    path(
+        "preferences/",
+        PreferenceListCreateView.as_view(),
+        name="preference-list",
+    ),
+    path(
+        "preferences/<int:pk>/",
+        PreferenceDetailView.as_view(),
+        name="preference-detail",
     ),
 ]
