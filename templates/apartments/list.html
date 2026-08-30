@@ -35,6 +35,16 @@
         <input type="number" name="bathrooms" class="form-control" placeholder="Bathrooms"
                value="{{ request.GET.bathrooms }}">
     </div>
+    <div class="col-md-12 d-flex align-items-center gap-3 small text-muted">
+        <span>Facilities:</span>
+        {% for facility in facility_fields %}
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="{{ facility.name }}" value="on"
+                   id="f-{{ facility.name }}" {% if facility.checked %}checked{% endif %}>
+            <label class="form-check-label" for="f-{{ facility.name }}">{{ facility.label }}</label>
+        </div>
+        {% endfor %}
+    </div>
 </form>
 
 {% if apartments %}

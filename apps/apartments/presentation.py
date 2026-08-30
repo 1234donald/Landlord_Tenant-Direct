@@ -1,5 +1,5 @@
 """HTML presentation views for the Apartment module (Phase 3, Sprint 3.6; Phase
-4, Sprint 4.1).
+4, Sprints 4.1-4.2).
 
 These form the read-oriented presentation layer (AGENTS 6): a public apartment
 browsing page rendered as apartment cards, a full apartment detail page showing
@@ -17,10 +17,11 @@ from .views import build_search_queryset
 class ApartmentBrowseView(ListView):
     """Public list of available apartments rendered as cards.
 
-    Supports the Sprint 4.1 basic search criteria supplied through the query
-    string (location, apartment type, price, bedrooms, bathrooms). Only
-    apartments currently available (``availability=True``) are shown so a
-    listing that is unavailable is not presented to prospective tenants.
+    Supports the Sprint 4.1-4.2 combined search/filter criteria supplied
+    through the query string (location, apartment type, price range, bedrooms,
+    bathrooms and facility flags). Only apartments currently available
+    (``availability=True``) are shown so a listing that is unavailable is not
+    presented to prospective tenants.
     """
 
     template_name = "apartments/list.html"
@@ -39,6 +40,21 @@ class ApartmentBrowseView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["apartment_types"] = Apartment.ApartmentType.choices
+        labels = {
+            "parking": "Parking",
+            "electricity": "Electricity",
+            "water": "Water",
+            "security": "Security",
+            "furnished": "Furnished",
+        }
+        context["facility_fields"] = [
+            {
+                "name": name,
+                "label": label,
+                "checked": bool(self.request.GET.get(name)),
+            }
+            for name, label in labels.items()
+        ]
         return context
 
 

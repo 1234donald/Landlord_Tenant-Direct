@@ -116,6 +116,15 @@ class ApartmentBrowseListTests(TestCase):
         self.assertIn('name="location"', content)
         self.assertIn('name="max_price"', content)
         self.assertIn('name="bedrooms"', content)
+        self.assertIn('name="parking"', content)
+
+    def test_list_filters_by_facility(self):
+        make_apartment(self.landlord, title="With Parking", parking=True)
+        make_apartment(self.landlord, title="Without Parking", parking=False)
+        response = self.client.get(reverse("apartment-list"), {"parking": "on"})
+        content = response.content.decode()
+        self.assertIn("With Parking", content)
+        self.assertNotIn("Without Parking", content)
 
 
 class ApartmentDetailPageTests(TestCase):

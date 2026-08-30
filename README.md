@@ -291,9 +291,22 @@ Phase 2 (Authentication and User Management) is in progress.
    these criteria. Invalid parameter values return a 400 with field-specific
    errors rather than silently returning misleading results, and the response
    uses the standard list envelope. The presentation browse page
-   (`/apartments/`) gained a matching search form wired to the same filters.
+   (   `/apartments/`) gained a matching search form wired to the same filters.
    18 search tests (184 total); no database changes were required.
+- **Sprint 4.2 (completed):** Combined filtering and pagination — the
+   `GET /api/v1/apartments/` endpoint now supports combined filtering across all
+   listing attributes: price range (`min_price` / `max_price`), location,
+   apartment type, bedrooms, bathrooms, facility flags (`parking`,
+   `electricity`, `water`, `security`, `furnished`) and availability. Facility
+   and availability booleans accept `true/false`, `1/0`, `yes/no` and `on/off`,
+   with invalid values rejected by a 400 (never silently ignored). The response
+   is paginated (page size 12) and includes `count`, `page`, `pages`, `next`
+   and `previous` metadata while preserving the other filters in the page links.
+   The presentation browse page (`/apartments/`) gained matching facility
+   checkboxes in its search form. 14 filter/pagination tests (198 total); no
+   database changes were required.
 
 Features (recommendations, messaging) are not yet implemented; the
 verification workflow/API and apartment creation, media, management
-(update, delete, availability), presentation and search are complete.
+(update, delete, availability), presentation, search and combined filtering
+are complete.
