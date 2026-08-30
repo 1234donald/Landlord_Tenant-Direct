@@ -487,11 +487,28 @@ Phase 2 (Authentication and User Management) is in progress.
     12 access-control subtests) verify role enforcement, state-change behaviour,
     non-pending re-review protection and report counts (455 total); no database
     changes.
+- **Sprint 6.3 (completed):** security hardening — verified and hardened the
+    application configuration against §27 (AGENTS 19-24). Added explicit
+    production secure-cookie configuration (`SESSION_COOKIE_HTTPONLY`,
+    `SESSION_COOKIE_SAMESITE="Lax"`, `CSRF_COOKIE_SAMESITE="Lax"`) alongside
+    the existing `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, HTTPS/HSTS,
+    `X_FRAME_OPTIONS="DENY"` and content-type-sniffing headers. Added custom
+    `handler400/404/500` error pages (`apps/core/views.py` +
+    `templates/errors/*.html`) that render clean, brand-consistent pages with no
+    stack traces or internal paths leaked (secure error responses).
+    `tests/integration/test_security_hardening.py` (24 tests + 4 subtests)
+    verifies the controls are in place: production cookies/headers, CSRF
+    enforcement on tokenless POSTs (with a correctly-constructed enforcing
+    client) and acceptance with a valid token, password hashing + all four
+    validators, secrets management (no hardcoded key, `.env`/keys gitignored),
+    non-leaking 404/500 pages, role enforcement and the media/upload root
+    separation (479 total); no database changes.
 
-Sprint 6.2 delivers the complete administrative workflow (user status, apartment
-moderation, verification review and administrative reports), closing out the
-Phase 6 administration requirements. Sprint 6.3 proceeds to the remaining Phase
-6 work (security hardening and system integration).
+Sprint 6.3 hardens the application configuration and adds a verification suite
+for the §27 security controls. This completes Sprint 6.3; the remaining Phase 6
+work is Sprint 6.4 (API security and validation — serializer validation,
+throttling, pagination, consistent API errors) and Sprint 6.5 (audit, logging
+and data integrity).
 
 Sprint 5.4 completes the recommendation weighted-distance engine. A tenant
 query vector and each apartment candidate can now be compared by a weighted

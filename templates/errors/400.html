@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Bad request | Landlord-Tenant Direct Connect{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4">400</h1>
+    <p class="lead">Your request could not be processed.</p>
+    <p class="text-muted">Please check the details you entered and try again.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary mt-3">Return home</a>
+</div>
+{% endblock %}

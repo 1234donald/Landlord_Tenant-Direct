@@ -11,7 +11,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from apps.core.views import AboutView, HomeView
+from apps.core.views import AboutView, HomeView, handler404, handler500
 from apps.apartments.presentation import (
     ApartmentBrowseView,
     ApartmentDetailPageView,
@@ -46,3 +46,8 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+# Custom error handlers (Sprint 6.3 "secure error responses"). Django's
+# ROOT_URLCONF automatically uses the module-level ``handler404``/``handler500``
+# imported above to render clean, non-leaking error pages.

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong | Landlord-Tenant Direct Connect{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4">500</h1>
+    <p class="lead">Something went wrong on our side.</p>
+    <p class="text-muted">Please try again in a moment. If the problem continues, contact support.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary mt-3">Return home</a>
+</div>
+{% endblock %}

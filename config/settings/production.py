@@ -40,7 +40,10 @@ CSRF_TRUSTED_ORIGINS = [
 # Security hardening (production)
 # ---------------------------------------------------------------------------
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = "Lax"
 SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Page not found | Landlord-Tenant Direct Connect{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4">404</h1>
+    <p class="lead">The page you were looking for could not be found.</p>
+    <p class="text-muted">It may have been moved, or the address may be incorrect.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary mt-3">Return home</a>
+</div>
+{% endblock %}
