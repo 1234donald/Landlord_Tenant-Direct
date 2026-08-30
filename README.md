@@ -386,11 +386,21 @@ Phase 2 (Authentication and User Management) is in progress.
    are emitted as raw floats (min-max normalisation is Sprint 5.3). All
    encoding draws on the Sprint 5.1 feature constants. 13 preprocessing tests
    (327 total); no database changes.
+- **Sprint 5.3 (completed):** Numerical normalisation — the tested
+   normalisation service in `ml/preprocessing.py`. It min-max normalises the
+   numerical features (`rental_price`, `bedrooms`, `bathrooms`) using
+   `x' = (x − xmin)/(xmax − xmin)`, protects against division by zero when a
+   feature is constant across the candidate set (returns `0.0` instead of
+   dividing), and provides `feature_bounds`/`min_max_normalise`/
+   `normalise_apartments`/`normalise_tenant_vector`. Bounds are computed across
+   the eligible candidate apartments so every candidate `A` and the tenant query
+   vector `U` share a common normalisation frame; categorical one-hot and binary
+   dimensions pass through unchanged and missing (`None`) tenant values are
+   preserved. 15 normalisation tests (342 total), including known-value cases;
+   no database changes.
 
-Sprint 5.2 completes the recommendation feature extraction/encoding layer
-(the feature-processing pipeline deliverable). Tenants and apartments are
-now converted into comparable encoded vectors with correct categorical and
-binary encoding and explicit missing-value handling. Numerical normalisation
-(Sprint 5.3), the weighted distance (Sprint 5.4), ranking (Sprint 5.5) and
-the recommendation API/UI remain in this phase; frontend dashboards and
-administration are later phases.
+Sprint 5.3 completes the recommendation numerical normalisation layer. Raw
+encoded values are rescaled reproducibly and safely into a common frame for
+comparison. The weighted distance (Sprint 5.4), ranking (Sprint 5.5),
+evaluation and the recommendation API/UI remain in this phase; frontend
+dashboards and administration are later phases.

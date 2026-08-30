@@ -1,24 +1,22 @@
 """
-Feature extraction and encoding for Weighted KNN (Phase 5, Sprint 5.2).
+Feature extraction, encoding and numerical normalisation for Weighted KNN
+(Phase 5, Sprints 5.2 and 5.3).
 
-This module implements the **feature-processing pipeline** deliverable of
-Sprint 5.2: tenant-vector construction, apartment-vector construction,
-categorical encoding, binary feature encoding and missing-value handling.
+This module implements the feature-processing pipeline (Sprint 5.2) and the
+numerical normalisation service (Sprint 5.3):
+
+- tenant-vector construction, apartment-vector construction;
+- categorical (one-hot) encoding and binary 0/1 encoding;
+- missing-value handling (``None`` plus an ``active`` mask);
+- min-max normalisation of numerical features with division-by-zero
+  protection (AGENTS 14).
 
 It consumes the authoritative feature specification in ``ml.features``
-(Sprint 5.1) and produces encoded integer/float dictionaries that are later
-consumed by normalisation (Sprint 5.3) and the weighted distance (Sprint 5.4).
-
-Scope notes:
-
-- Numerical features are emitted as *raw* values; min-max normalisation is a
-  separate Sprint 5.3 responsibility (AGENTS 14).
-- Categorical (apartment type) features are one-hot encoded (AGENTS 14).
-- Binary facility features are encoded as 0/1.
-- Missing (unstated) tenant preferences are preserved as ``None`` together
-  with an ``active`` mask so later steps can neutralise the contribution of
-  unstated dimensions (a preference model may legitimately be ``None``).
-- No similarity calculation is performed here (Sprint 5.4).
+(Sprint 5.1) and produces encoded, normalised numeric dictionaries that are
+later consumed by the weighted distance (Sprint 5.4). Categorical and binary
+features are emitted as 0/1 and are not rescaled by normalisation; only the
+numerical features are min-max normalised. No similarity calculation is
+performed here (Sprint 5.4).
 """
 from apps.apartments.models import Apartment
 
@@ -162,3 +160,82 @@ def validate_encoded_pair(apartment_vector, tenant_vector, active_mask):
     if set(active_mask) != set(tenant_vector):
         return False
     return True
+
+
+# ---------------------------------------------------------------------------
+# Numerical normalisation (Sprint 5.3)
+# ---------------------------------------------------------------------------
+def feature_bounds(encoded_apartment_vectors):
+    """Compute ``(min, max)`` for each numerical feature across the apartments.
+
+    ``encoded_apartment_vectors`` is an iterable of encoded apartment vectors
+    (as produced by ``encode_apartment_vector``). Only the numerical feature
+    dimensions are considered. When there are no values for a feature the
+    bound is ``(0.0, 0.0)`` so normalisation stays well-defined.
+    """
+    values = {name: [] for name in NUMERICAL_FEATURES}
+    for vector in encoded_apartment_vectors:
+        for name in NUMERICAL_FEATURES:
+            value = vector.get(name)
+            if value is not None:
+                values[name].append(float(value))
+
+    bounds = {}
+    for name in NUMERICAL_FEATURES:
+        if values[name]:
+            bounds[name] = (min(values[name]), max(values[name]))
+        else:
+            bounds[name] = (0.0, 0.0)
+    return bounds
+
+
+def min_max_normalise(value, lower, upper):
+    """Min-max normalise a single value into ``[0, 1]`` (x' = (x-min)/(max-min)).
+
+    ``None`` (a missing/unstated preferference) is passed through unchanged.
+    When ``lower == upper`` the feature is constant over the candidate set and
+    the range is zero; division by zero is avoided by returning ``0.0`` so the
+    feature contributes nothing to discrimination (AGENTS 14, 27).
+    """
+    if value is None:
+        return None
+    span = upper - lower
+    if span == 0:
+        return 0.0
+    return (float(value) - lower) / span
+
+
+def normalise_features(vector, bounds):
+    """Return a copy of an encoded vector with numerical features normalised.
+
+    Numerical feature dimensions are rescaled with ``bounds``; categorical
+    (one-hot) and binary dimensions are copied through unchanged. Missing
+    values (``None``) are preserved.
+    """
+    out = dict(vector)
+    for name in NUMERICAL_FEATURES:
+        if name not in out:
+            continue
+        lower, upper = bounds[name]
+        out[name] = min_max_normalise(out[name], lower, upper)
+    return out
+
+
+def normalise_apartments(encoded_apartment_vectors):
+    """Normalise a collection of encoded apartment vectors against their own range.
+
+    Returns ``(bounds, normalised_vectors)`` where ``bounds`` is the per-feature
+    ``(min, max)`` computed across the collection and each vector is normalised
+    with those same bounds, so rankings are reproducible for the candidate set.
+    """
+    bounds = feature_bounds(encoded_apartment_vectors)
+    return bounds, [normalise_features(vector, bounds) for vector in encoded_apartment_vectors]
+
+
+def normalise_tenant_vector(encoded_tenant_vector, bounds):
+    """Normalise the numerical features of an encoded tenant query vector.
+
+    ``bounds`` must match those used to normalise the candidate apartments so
+    the query vector ``U`` and candidate vectors ``A`` share a common frame.
+    """
+    return normalise_features(encoded_tenant_vector, bounds)
