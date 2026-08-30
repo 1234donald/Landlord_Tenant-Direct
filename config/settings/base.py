@@ -56,13 +56,14 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     # Project apps
-    "apps.core",
-    "apps.accounts",
-    "apps.verification",
-    "apps.apartments",
-    "apps.recommendations",
-    "apps.messaging",
-]
+      "apps.core",
+      "apps.accounts",
+      "apps.verification",
+      "apps.apartments",
+      "apps.recommendations",
+      "apps.messaging",
+      "apps.admin_dashboard",
+  ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

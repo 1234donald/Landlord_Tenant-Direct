@@ -21,6 +21,10 @@ from apps.recommendations.presentation import RecommendationResultsPageView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    # Administrator dashboard lives OUTSIDE Django admin (/admin/ is owned by
+    # the Django admin site) to avoid its catch-all routing redirecting to the
+    # admin login and to keep a dedicated admin-only console (Sprint 6.1).
+    path("console/", include("apps.admin_dashboard.urls")),
     path("api/", include("api.urls")),
     path("about/", AboutView.as_view(), name="about"),
     path("my/apartments/", MyApartmentsView.as_view(), name="my-apartments"),

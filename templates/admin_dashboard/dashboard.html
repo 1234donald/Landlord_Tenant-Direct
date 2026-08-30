@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Administrator Dashboard | Landlord-Tenant Direct Connect{% endblock %}
+{% block content %}
+<h1 class="mb-4">
+    <i class="bi bi-speedometer2 me-2"></i>Administrator Dashboard
+</h1>
+<p class="text-muted">
+    System overview for administrators. Figures are live aggregates of the
+    platform database.
+</p>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total users</h6>
+                <h3 class="mb-1">{{ total_users }}</h3>
+                <small class="text-muted">{{ active_users }} active</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Apartments</h6>
+                <h3 class="mb-1">{{ total_apartments }}</h3>
+                <small class="text-muted">{{ available_apartments }} available</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Verification pending</h6>
+                <h3 class="mb-1">{{ verification_pending }}</h3>
+                <small class="text-muted">
+                    {{ verification_approved }} approved /
+                    {{ verification_rejected }} rejected
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Messaging</h6>
+                <h3 class="mb-1">{{ total_messages }}</h3>
+                <small class="text-muted">{{ total_conversations }} conversations</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Users by role</div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Tenants</span><span class="badge text-bg-secondary">{{ tenant_count }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Landlords</span><span class="badge text-bg-secondary">{{ landlord_count }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Administrators</span><span class="badge text-bg-secondary">{{ admin_count }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Active landlords</span><span class="badge text-bg-secondary">{{ active_landlords }}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Quick actions</div>
+            <div class="list-group list-group-flush">
+                <a class="list-group-item list-group-item-action" href="{% url 'admin_dashboard:users' %}">
+                    <i class="bi bi-people me-2"></i>Manage users
+                </a>
+                <a class="list-group-item list-group-item-action" href="{% url 'admin_dashboard:landlords' %}">
+                    <i class="bi bi-person-vcard me-2"></i>Manage landlords
+                </a>
+                <a class="list-group-item list-group-item-action" href="{% url 'admin_dashboard:apartments' %}">
+                    <i class="bi bi-building me-2"></i>Manage apartments
+                </a>
+                <a class="list-group-item list-group-item-action" href="{% url 'admin_dashboard:verifications' %}">
+                    <i class="bi bi-patch-check me-2"></i>Review verifications
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

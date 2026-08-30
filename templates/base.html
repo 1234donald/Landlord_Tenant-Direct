@@ -42,6 +42,19 @@
                         <a class="nav-link" href="{% url 'recommendation-results' %}">Recommendations</a>
                     </li>
                     {% endif %}
+                    {% if user.is_authenticated and user.is_admin %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#"
+                           data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admin_dashboard:users' %}">Users</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admin_dashboard:landlords' %}">Landlords</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admin_dashboard:apartments' %}">Apartments</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admin_dashboard:verifications' %}">Verifications</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
                     {% block nav_extra %}{% endblock %}
                 </ul>
             </div>

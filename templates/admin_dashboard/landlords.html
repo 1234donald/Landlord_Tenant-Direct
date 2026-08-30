@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Landlord Management | Landlord-Tenant Direct Connect{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'admin_dashboard:dashboard' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Dashboard
+    </a>
+    <h1 class="mt-2"><i class="bi bi-person-vcard me-2"></i>Landlord Management</h1>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Full name</th>
+                <th>Phone</th>
+                <th>Verification</th>
+                <th>Listings</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for landlord in landlords %}
+            <tr>
+                <td>{{ landlord.email }}</td>
+                <td>{{ landlord.full_name }}</td>
+                <td>{{ landlord.phone|default:"—" }}</td>
+                <td>
+                    {% with statuses=landlord.verification_requests.all %}
+                    {% if statuses %}
+                        {% if statuses.0.status == "APPROVED" %}
+                        <span class="badge text-bg-success">Verified</span>
+                        {% elif statuses.0.status == "PENDING" %}
+                        <span class="badge text-bg-warning">Pending</span>
+                        {% else %}
+                        <span class="badge text-bg-danger">Rejected</span>
+                        {% endif %}
+                    {% else %}
+                    <span class="badge text-bg-secondary">Not submitted</span>
+                    {% endif %}
+                    {% endwith %}
+                </td>
+                <td>{{ landlord.apartments.count }}</td>
+                <td>
+                    {% if landlord.is_active %}
+                    <span class="badge text-bg-success">Active</span>
+                    {% else %}
+                    <span class="badge text-bg-secondary">Inactive</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted">No landlords found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+<nav>
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

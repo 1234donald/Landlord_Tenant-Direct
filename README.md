@@ -456,13 +456,25 @@ Phase 2 (Authentication and User Management) is in progress.
     evaluation metrics are computed from actual ranking output. 19 metric tests
     + 8 validation tests were added in the new `tests/ml/` directory (426
     total); no database changes.
+- **Sprint 6.1 (completed):** administrator dashboard — a dedicated admin-only
+    console in the new `apps/admin_dashboard` module (routes under
+    `/console/`, intentionally outside Django admin's `/admin/` namespace so it
+    is not captured by the admin site's login routing). Five ADMIN-only pages
+    are delivered (FR-005, AGENTS 42): a system-overview dashboard with live
+    counts (users by role, active status, apartments, availability, verification
+    by status, conversations and messages), user management with a role filter,
+    landlord management (with verification badge), apartment management (all
+    listings), and a verification overview filtered by status. Every view is
+    guarded by `AdminOnlyMixin`, so landlords, tenants and anonymous users get a
+    403. An "Admin" dropdown was added to the shared navigation for admin users.
+    13 integration tests (plus 20 access-control subtests) verify role
+    enforcement and that all overview figures come from the real database (439
+    total); no database changes.
 
-Sprint 5.7 completes Phase 5's validation and evaluation-readiness work: the
-Weighted KNN component is reproducible, its exit criteria are verified against
-real apartment records, and the evaluation metrics required for Chapter Four
-(Precision@K, Recall@K, Hit Rate@K, NDCG@K) are implemented and unit-tested.
-This closes out the Weighted KNN recommendation phase; Phase 6 (administration,
-security and system integration) follows, with frontend dashboards later.
+Sprint 6.1 delivers the administrative dashboard that closes most of the admin
+management entry points. This kicks off Phase 6 (Administration, Security and
+System Integration); the granular moderation workflows (approve/reject, listing
+moderation, reports) follow in Sprint 6.2.
 
 Sprint 5.4 completes the recommendation weighted-distance engine. A tenant
 query vector and each apartment candidate can now be compared by a weighted
