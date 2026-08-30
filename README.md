@@ -442,12 +442,27 @@ Phase 2 (Authentication and User Management) is in progress.
     score" wording (AGENTS 43) and a regenerate form. 6 service tests, 15 API
     tests and 3 page tests were added (399 total); migration `0002` creates the
     new tables.
+- **Sprint 5.7 (completed):** recommendation validation and evaluation
+    readiness — the evaluation deliverable `ml/evaluation.py` implements the
+    four §31 metrics (Precision@K, Recall@K, Hit Rate@K, NDCG@K) as pure
+    Python functions over ranking results vs a ground-truth relevance set, plus
+    an `evaluate()` helper returning all four. `ml/evaluation_scenarios.py`
+    supplies deterministic, clearly-labelled test/evaluation data (AGENTS 40).
+    Validation runs the real Weighted KNN engine against a controlled apartment
+    catalogue seeded as actual `Apartment` records and verifies the Phase 5 exit
+    criteria: real records are ranked (not placeholders), scores are real
+    (similarity ≡ exp(-distance)), lower distance → higher rank, results are
+    reproducible, hard filters / K / missing-data behave correctly, and
+    evaluation metrics are computed from actual ranking output. 19 metric tests
+    + 8 validation tests were added in the new `tests/ml/` directory (426
+    total); no database changes.
 
-Sprint 5.6 makes the recommendation feature end-to-end functional: the Weighted
-KNN pipeline is driven by real stored preferences against real apartments and
-surfaces ranked recommendations through both the REST API and a results page.
-Evaluation and administration remain in this phase; frontend dashboards and
-recommendation evaluation are later phases.
+Sprint 5.7 completes Phase 5's validation and evaluation-readiness work: the
+Weighted KNN component is reproducible, its exit criteria are verified against
+real apartment records, and the evaluation metrics required for Chapter Four
+(Precision@K, Recall@K, Hit Rate@K, NDCG@K) are implemented and unit-tested.
+This closes out the Weighted KNN recommendation phase; Phase 6 (administration,
+security and system integration) follows, with frontend dashboards later.
 
 Sprint 5.4 completes the recommendation weighted-distance engine. A tenant
 query vector and each apartment candidate can now be compared by a weighted
