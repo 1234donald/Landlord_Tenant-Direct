@@ -411,6 +411,26 @@ Phase 2 (Authentication and User Management) is in progress.
    weighted-distance tests (360 total), including known-value mathematical
    cases (identity → 0, single-dimension weights, custom weights, type match
    vs mismatch); no database changes.
+- **Sprint 5.5 (completed):** KNN candidate selection and ranking — the
+   Weighted KNN ranking engine in `ml/ranking.py`. Once a tenant's stored
+   `Preference` is available, the engine retrieves the eligible apartments
+   (`hard_filter_queryset`), applies the Sprint 5.1 hard filters before any
+   similarity ranking (availability, location, price cap, exact apartment
+   type, bedroom/bathroom minimums and required facilities), composes the
+   Phase 5 encoding/normalisation/distance components to score every eligible
+   candidate, sorts by ascending distance (smallest = most relevant, AGENTS
+   12), selects the K nearest (configurable `DEFAULT_K`), and assigns 1-based
+   ranking positions. When fewer than K candidates are eligible, all of them
+   are returned (still ranked). The primary entry point is
+   `recommend(queryset, preference, k, weights)`. 15 ranking tests (375 total),
+   including the price-cap exclusion, ascending order, K selection and
+   limited-candidate cases; no database changes.
+
+Sprint 5.5 completes the Weighted KNN ranking engine. The full pipeline —
+feature specification, extraction/encoding, normalisation, weighted distance,
+hard filtering, K selection and ascending ranking — is implemented and
+tested. The Django service/API/UI integration (Sprint 5.6), evaluation and
+administration remain in this phase; frontend dashboards are later phases.
 
 Sprint 5.4 completes the recommendation weighted-distance engine. A tenant
 query vector and each apartment candidate can now be compared by a weighted
