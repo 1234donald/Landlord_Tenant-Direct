@@ -272,7 +272,18 @@ Phase 2 (Authentication and User Management) is in progress.
    as creation, and new files must all pass before old media is removed so a
    failed update never leaves a listing without images. No database changes were
    required; 19 apartment-management API tests (147 total).
+- **Sprint 3.6 (completed):** Apartment presentation and module testing — a
+   read-oriented HTML presentation layer (`apps/apartments/presentation.py` +
+   `templates/apartments/`) built on Django generic views and the existing
+   Bootstrap base template. `/apartments/` renders available apartments as cards
+   (cover image, location, price, type, beds/baths, availability badge);
+   `/apartments/{id}/` renders full listing details with a media gallery,
+   facilities display, furnishing and availability status, and the landlord's
+   permitted information (name and email); `/my/apartments/` is a landlord-only
+   page listing a landlord's own apartments (admins may view all, tenants are
+   forbidden). The browse page filters out unavailable listings. 19 module tests
+   (166 total); no database changes were required.
 
 Features (search, recommendations, messaging) are not yet implemented; the
-verification workflow/API and apartment creation, media and management
-(update, delete, availability) are complete.
+verification workflow/API and apartment creation, media, management
+(update, delete, availability) and presentation are complete.

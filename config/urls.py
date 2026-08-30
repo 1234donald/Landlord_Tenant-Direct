@@ -12,11 +12,23 @@ from django.contrib import admin
 from django.urls import include, path
 
 from apps.core.views import AboutView, HomeView
+from apps.apartments.presentation import (
+    ApartmentBrowseView,
+    ApartmentDetailPageView,
+    MyApartmentsView,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path("about/", AboutView.as_view(), name="about"),
+    path("my/apartments/", MyApartmentsView.as_view(), name="my-apartments"),
+    path(
+        "apartments/<int:pk>/",
+        ApartmentDetailPageView.as_view(),
+        name="apartment-detail",
+    ),
+    path("apartments/", ApartmentBrowseView.as_view(), name="apartment-list"),
     path("", HomeView.as_view(), name="home"),
 ]
 

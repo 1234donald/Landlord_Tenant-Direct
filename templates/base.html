@@ -29,6 +29,14 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'about' %}">About</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'apartment-list' %}">Apartments</a>
+                    </li>
+                    {% if user.is_authenticated and user.is_landlord %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'my-apartments' %}">My Apartments</a>
+                    </li>
+                    {% endif %}
                     {% block nav_extra %}{% endblock %}
                 </ul>
             </div>

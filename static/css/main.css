@@ -32,3 +32,14 @@ main {
   color: #adb5bd;
   padding: 1.5rem 0;
 }
+
+/* Apartment presentation (Phase 3, Sprint 3.6) */
+.apartment-card-img {
+  height: 200px;
+  object-fit: cover;
+}
+
+.apartment-gallery-img {
+  max-height: 420px;
+  object-fit: cover;
+}

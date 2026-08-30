@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}{{ apartment.title }} | Landlord-Tenant Direct Connect{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'apartment-list' %}">Apartments</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ apartment.title }}</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            {% with images=apartment.images.all %}
+            {% if images %}
+            <div id="apartmentGallery" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for image in images %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image.url }}" class="d-block w-100 apartment-gallery-img"
+                             alt="Photo of {{ apartment.title }}">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if images|length > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#apartmentGallery" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#apartmentGallery" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="p-5 text-center bg-secondary bg-opacity-10">
+                <i class="bi bi-house-door display-3 text-secondary"></i>
+                <p class="text-muted mt-2 mb-0">No photos uploaded.</p>
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h1 class="h3 mb-0">{{ apartment.title }}</h1>
+                    <span class="badge {% if apartment.availability %}text-bg-success{% else %}text-bg-secondary{% endif %}">
+                        {% if apartment.availability %}Available{% else %}Unavailable{% endif %}
+                    </span>
+                </div>
+                <p class="text-muted">
+                    <i class="bi bi-geo-alt me-1"></i>{{ apartment.location }}
+                    {% if apartment.address %}&middot; {{ apartment.address }}{% endif %}
+                </p>
+
+                <h2 class="h4"><i class="bi bi-currency-naira"></i>{{ apartment.rental_price|floatformat:0 }} / month</h2>
+
+                <hr>
+
+                <h3 class="h5">Overview</h3>
+                <div class="row small text-muted mb-3">
+                    <div class="col-6 col-md-3"><strong>{{ apartment.get_apartment_type_display }}</strong><br>Type</div>
+                    <div class="col-6 col-md-3"><strong>{{ apartment.bedrooms }}</strong><br>Bedrooms</div>
+                    <div class="col-6 col-md-3"><strong>{{ apartment.bathrooms }}</strong><br>Bathrooms</div>
+                    <div class="col-6 col-md-3">
+                        <strong>{% if apartment.furnished %}Furnished{% else %}Unfurnished{% endif %}</strong><br>Furnishing
+                    </div>
+                </div>
+
+                <h3 class="h5">Description</h3>
+                <p>{{ apartment.description|linebreaksbr }}</p>
+
+                <h3 class="h5">Facilities</h3>
+                <ul class="list-unstyled row">
+                    <li class="col-sm-6 mb-2">
+                        <i class="bi {% if apartment.parking %}bi-check-circle-fill text-success{% else %}bi-x-circle text-danger{% endif %} me-2"></i>Parking
+                    </li>
+                    <li class="col-sm-6 mb-2">
+                        <i class="bi {% if apartment.electricity %}bi-check-circle-fill text-success{% else %}bi-x-circle text-danger{% endif %} me-2"></i>Electricity
+                    </li>
+                    <li class="col-sm-6 mb-2">
+                        <i class="bi {% if apartment.water %}bi-check-circle-fill text-success{% else %}bi-x-circle text-danger{% endif %} me-2"></i>Water
+                    </li>
+                    <li class="col-sm-6 mb-2">
+                        <i class="bi {% if apartment.security %}bi-check-circle-fill text-success{% else %}bi-x-circle text-danger{% endif %} me-2"></i>Security
+                    </li>
+                </ul>
+                {% if apartment.additional_facilities %}
+                <p class="small text-muted mb-0"><strong>Additional facilities:</strong> {{ apartment.additional_facilities }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-4">
+                <h3 class="h5">Landlord</h3>
+                <p class="mb-1"><i class="bi bi-person-circle me-2"></i>{{ apartment.landlord.full_name }}</p>
+                <p class="mb-0 text-muted small">
+                    <i class="bi bi-envelope me-2"></i>{{ apartment.landlord.email }}
+                </p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h3 class="h5">Listing</h3>
+                <dl class="row small mb-0">
+                    <dt class="col-5">Status</dt>
+                    <dd class="col-7">
+                        {% if apartment.availability %}
+                        <span class="badge text-bg-success">Available</span>
+                        {% else %}
+                        <span class="badge text-bg-secondary">Unavailable</span>
+                        {% endif %}
+                    </dd>
+                    <dt class="col-5">Listed</dt>
+                    <dd class="col-7">{{ apartment.created_at|date:"M d, Y" }}</dd>
+                    <dt class="col-5">Updated</dt>
+                    <dd class="col-7">{{ apartment.updated_at|date:"M d, Y" }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
