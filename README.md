@@ -358,9 +358,23 @@ Phase 2 (Authentication and User Management) is in progress.
    the Sprint 4.6 phase exit criteria are satisfied. No new UI was built here
    (frontend dashboards are later-phase work). 4 integration tests (293 total
    across the suite at this point); no database changes were required.
+- **Sprint 5.1 (completed):** Weighted KNN feature specification — the
+   confirmed recommendation feature set for the recommendation component,
+   specified in `ml/feature_specification.md` and mirrored by the
+   authoritative constants in `ml/features.py`. It fixes the nine distance
+   features (`rental_price`, `bedrooms`, `bathrooms`, `apartment_type`, and
+   the facility binaries `parking`/`electricity`/`water`/`security`/
+   `furnished`), classifies them as numerical / categorical / binary, maps
+   each to its `Apartment` and `Preference` database fields, defines the
+   configurable non-negative feature weights (defaults with `rental_price`
+   weighted highest), and defines the hard filters applied before similarity
+   ranking (availability, location, price cap, apartment type, unit minimums
+   and required facilities — consistent with the existing search/filter
+   logic). `DEFAULT_K=5` is set as the configurable neighbour count. 21
+   feature-specification tests (314 total); no database changes.
 
-Sprint 4.6 completes Phase 4 (Tenant Search, Preferences and
-Communication). Search, filtering, apartment details, tenant preferences,
-messaging and the end-to-end tenant journey are all working. The Weighted
-KNN recommendation component (Phase 5), recommendation API/UI, the broader
-frontend dashboards and administration are planned for later phases.
+Sprint 5.1 completes the recommendation *specification*. The Weighted KNN
+feature list, DB mapping, classification, weights and hard filters are
+confirmed and documented. The extraction/encoding logic (Sprint 5.2+), the
+distance/ranking implementation and the recommendation API/UI remain in
+this phase; frontend dashboards and administration are later phases.
