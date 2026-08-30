@@ -18,6 +18,13 @@ from apps.accounts.views import (
     UserDetailView,
     UserListView,
 )
+from apps.verification.views import (
+    AdminVerificationApproveView,
+    AdminVerificationListView,
+    AdminVerificationRejectView,
+    VerificationStatusView,
+    VerificationSubmitView,
+)
 
 urlpatterns = [
     path("auth/register/", RegisterView.as_view(), name="auth-register"),
@@ -36,5 +43,30 @@ urlpatterns = [
         "accounts/users/<int:pk>/",
         UserDetailView.as_view(),
         name="accounts-user-detail",
+    ),
+    path(
+        "verification/submit/",
+        VerificationSubmitView.as_view(),
+        name="verification-submit",
+    ),
+    path(
+        "verification/status/",
+        VerificationStatusView.as_view(),
+        name="verification-status",
+    ),
+    path(
+        "admin/verifications/",
+        AdminVerificationListView.as_view(),
+        name="admin-verifications",
+    ),
+    path(
+        "admin/verifications/<int:pk>/approve/",
+        AdminVerificationApproveView.as_view(),
+        name="admin-verification-approve",
+    ),
+    path(
+        "admin/verifications/<int:pk>/reject/",
+        AdminVerificationRejectView.as_view(),
+        name="admin-verification-reject",
     ),
 ]

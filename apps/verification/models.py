@@ -8,6 +8,7 @@ verify land title, verify government documents or make legal determinations
 """
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class VerificationRequest(models.Model):
@@ -68,3 +69,40 @@ class VerificationRequest(models.Model):
     @property
     def is_rejected(self):
         return self.status == self.Status.REJECTED
+
+    def approve(self, admin):
+        """Approve this request as an administrative review action.
+
+        Only a request still in the PENDING state can be approved. Records the
+        reviewing administrator and the review timestamp.
+        """
+        if not self.is_pending:
+            raise ValueError("Only pending requests can be approved.")
+        self.status = self.Status.APPROVED
+        self.reviewed_by = admin
+        self.reviewed_at = timezone.now()
+        self.save(
+            update_fields=["status", "reviewed_by", "reviewed_at", "updated_at"]
+        )
+
+    def reject(self, admin, remarks=""):
+        """Reject this request as an administrative review action.
+
+        Only a request still in the PENDING state can be rejected. Records the
+        reviewing administrator, the review timestamp and any remarks.
+        """
+        if not self.is_pending:
+            raise ValueError("Only pending requests can be rejected.")
+        self.status = self.Status.REJECTED
+        self.reviewed_by = admin
+        self.reviewed_at = timezone.now()
+        self.remarks = remarks or ""
+        self.save(
+            update_fields=[
+                "status",
+                "reviewed_by",
+                "reviewed_at",
+                "remarks",
+                "updated_at",
+            ]
+        )
