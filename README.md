@@ -259,9 +259,20 @@ Phase 2 (Authentication and User Management) is in progress.
   via Pillow (rejects arbitrary/non-image payloads disguised as images).
   Listing validation (positive price, ≥1 bedrooms/bathrooms, valid type) is
   enforced in `apps/apartments/serializers.py`. Invalid uploads never leave a
-  partial listing behind. Registered in Django Admin; 14 apartment creation
-  API tests (128 total).
+   partial listing behind. Registered in Django Admin; 14 apartment creation
+   API tests (128 total).
+- **Sprint 3.5 (completed):** Apartment update, delete and availability —
+   `PATCH /api/v1/apartments/{id}/` edits a listing (or a subset of its fields
+   via partial update), flips its `availability` status, and optionally replaces
+   the full image set when new files are supplied; `DELETE /api/v1/apartments/{id}/`
+   removes a listing (cascading its media). Access is enforced by the
+   `IsApartmentOwnerOrAdmin` permission class so only the owning landlord or an
+   administrator may modify or delete a listing; a tenant or a different
+   landlord is rejected. Image replacement reuses the same validation pipeline
+   as creation, and new files must all pass before old media is removed so a
+   failed update never leaves a listing without images. No database changes were
+   required; 19 apartment-management API tests (147 total).
 
-Features (apartment update/delete/availability, search, recommendations,
-messaging) are not yet implemented; the verification workflow/API and
-apartment creation with media are complete.
+Features (search, recommendations, messaging) are not yet implemented; the
+verification workflow/API and apartment creation, media and management
+(update, delete, availability) are complete.

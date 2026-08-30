@@ -116,6 +116,15 @@ class ApartmentCreateSerializer(_ApartmentBaseSerializer):
         return attrs
 
 
+class ApartmentUpdateSerializer(_ApartmentBaseSerializer):
+    """Partial update of an apartment listing.
+
+    Only the supplied fields are updated (partial). Listing ownership is never
+    editable through this endpoint. Image replacement is handled by the view
+    (see ``ApartmentDetailView``).
+    """
+
+
 class ApartmentImageSerializer(serializers.ModelSerializer):
     """Read representation of an apartment image."""
 

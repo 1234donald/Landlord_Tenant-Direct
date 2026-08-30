@@ -18,7 +18,7 @@ from apps.accounts.views import (
     UserDetailView,
     UserListView,
 )
-from apps.apartments.views import ApartmentCreateView
+from apps.apartments.views import ApartmentCreateView, ApartmentDetailView
 from apps.verification.views import (
     AdminVerificationApproveView,
     AdminVerificationListView,
@@ -74,5 +74,10 @@ urlpatterns = [
         "apartments/",
         ApartmentCreateView.as_view(),
         name="apartment-create",
+    ),
+    path(
+        "apartments/<int:pk>/",
+        ApartmentDetailView.as_view(),
+        name="apartment-detail",
     ),
 ]
