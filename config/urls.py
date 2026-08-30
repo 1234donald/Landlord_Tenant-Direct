@@ -17,12 +17,18 @@ from apps.apartments.presentation import (
     ApartmentDetailPageView,
     MyApartmentsView,
 )
+from apps.recommendations.presentation import RecommendationResultsPageView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path("about/", AboutView.as_view(), name="about"),
     path("my/apartments/", MyApartmentsView.as_view(), name="my-apartments"),
+    path(
+        "recommendations/",
+        RecommendationResultsPageView.as_view(),
+        name="recommendation-results",
+    ),
     path(
         "apartments/<int:pk>/",
         ApartmentDetailPageView.as_view(),

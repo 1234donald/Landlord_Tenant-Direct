@@ -37,6 +37,11 @@
                         <a class="nav-link" href="{% url 'my-apartments' %}">My Apartments</a>
                     </li>
                     {% endif %}
+                    {% if user.is_authenticated and user.is_tenant %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'recommendation-results' %}">Recommendations</a>
+                    </li>
+                    {% endif %}
                     {% block nav_extra %}{% endblock %}
                 </ul>
             </div>

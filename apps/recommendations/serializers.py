@@ -13,8 +13,9 @@ that invalid data (e.g. a negative ``max_rent``) is never persisted.
 from rest_framework import serializers
 
 from apps.apartments.models import Apartment
+from apps.apartments.serializers import ApartmentSerializer
 
-from .models import Preference
+from .models import Preference, Recommendation, RecommendationItem
 
 
 class PreferenceSerializer(serializers.ModelSerializer):
@@ -132,3 +133,47 @@ class PreferenceUpdateSerializer(_PreferenceBaseSerializer):
     Only the supplied fields are updated. Ownership is never editable through
     this endpoint.
     """
+
+
+class RecommendationItemSerializer(serializers.ModelSerializer):
+    """Read representation of one ranked apartment within a recommendation run.
+
+    Mirrors the recommendation API result shape (SYSTEM_REQUIREMENTS 24.4):
+    ``apartment_id``, ``rank`` and ``distance``, plus the derived similarity
+    score and the nested apartment data for presentation.
+    """
+
+    apartment = ApartmentSerializer(read_only=True)
+
+    class Meta:
+        model = RecommendationItem
+        fields = [
+            "id",
+            "apartment",
+            "rank",
+            "distance",
+            "similarity",
+        ]
+        read_only_fields = fields
+
+
+class RecommendationSerializer(serializers.ModelSerializer):
+    """Read representation of a persisted recommendation run."""
+
+    items = RecommendationItemSerializer(many=True, read_only=True)
+    preference_id = serializers.PrimaryKeyRelatedField(
+        source="preference", read_only=True
+    )
+
+    class Meta:
+        model = Recommendation
+        fields = [
+            "id",
+            "tenant",
+            "preference_id",
+            "algorithm",
+            "k",
+            "created_at",
+            "items",
+        ]
+        read_only_fields = fields

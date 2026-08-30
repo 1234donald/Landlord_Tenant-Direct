@@ -31,3 +31,29 @@ class IsPreferenceOwnerOrAdmin(BasePermission):
             and obj.tenant_id == user.id
             and user.is_tenant
         )
+
+
+class IsRecommendationOwnerOrAdmin(BasePermission):
+    """Allow access only to a recommendation run's owning tenant or an admin.
+
+    Mirrors the preference ownership rule so another tenant or a landlord can
+    never read a recommendation run they do not own (AGENTS 8, 19).
+    """
+
+    message = "You do not have permission to access this recommendation."
+
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(user and user.is_authenticated)
+
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+        if user.is_admin:
+            return True
+        return bool(
+            hasattr(obj, "tenant")
+            and obj.tenant_id == user.id
+            and user.is_tenant
+        )

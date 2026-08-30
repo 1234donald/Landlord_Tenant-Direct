@@ -422,15 +422,32 @@ Phase 2 (Authentication and User Management) is in progress.
    12), selects the K nearest (configurable `DEFAULT_K`), and assigns 1-based
    ranking positions. When fewer than K candidates are eligible, all of them
    are returned (still ranked). The primary entry point is
-   `recommend(queryset, preference, k, weights)`. 15 ranking tests (375 total),
-   including the price-cap exclusion, ascending order, K selection and
-   limited-candidate cases; no database changes.
+    `recommend(queryset, preference, k, weights)`. 15 ranking tests (375 total),
+    including the price-cap exclusion, ascending order, K selection and
+    limited-candidate cases; no database changes.
+- **Sprint 5.6 (completed):** Django/API/UI recommendation integration — the
+    full preference-to-recommendation flow is now live. Two persistence models
+    were added: `Recommendation` (tenant, preference, algorithm, configurable
+    `k`, created-at) and `RecommendationItem` (apartment, rank, distance,
+    similarity), giving the required `Tenant ── Recommendation ── Apartment`
+    relationship (SYSTEM_REQUIREMENTS §25–26). The service function
+    `generate_recommendations` (`apps/recommendations/services.py`) drives the
+    `ml` engine and persists each run, raising `NoPreferenceError` when a
+    tenant has (or owns) no preference. New API endpoints (§24.4):
+    `POST /api/v1/recommendations/generate/` (uses the latest preference or an
+    optional `preference_id`), `GET /api/v1/recommendations/` (tenant's runs),
+    and `GET /api/v1/recommendations/{id}/` (owning tenant or admin). A
+    tenant-facing results page (`templates/recommendations/results.html`)
+    renders ranked apartment cards with "Recommended for you" and "Similarity
+    score" wording (AGENTS 43) and a regenerate form. 6 service tests, 15 API
+    tests and 3 page tests were added (399 total); migration `0002` creates the
+    new tables.
 
-Sprint 5.5 completes the Weighted KNN ranking engine. The full pipeline —
-feature specification, extraction/encoding, normalisation, weighted distance,
-hard filtering, K selection and ascending ranking — is implemented and
-tested. The Django service/API/UI integration (Sprint 5.6), evaluation and
-administration remain in this phase; frontend dashboards are later phases.
+Sprint 5.6 makes the recommendation feature end-to-end functional: the Weighted
+KNN pipeline is driven by real stored preferences against real apartments and
+surfaces ranked recommendations through both the REST API and a results page.
+Evaluation and administration remain in this phase; frontend dashboards and
+recommendation evaluation are later phases.
 
 Sprint 5.4 completes the recommendation weighted-distance engine. A tenant
 query vector and each apartment candidate can now be compared by a weighted

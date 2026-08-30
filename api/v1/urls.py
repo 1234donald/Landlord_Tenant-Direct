@@ -32,6 +32,9 @@ from apps.messaging.views import (
 from apps.recommendations.views import (
     PreferenceDetailView,
     PreferenceListCreateView,
+    RecommendationDetailView,
+    RecommendationGenerateView,
+    RecommendationListView,
 )
 from apps.verification.views import (
     AdminVerificationApproveView,
@@ -103,6 +106,21 @@ urlpatterns = [
         "preferences/<int:pk>/",
         PreferenceDetailView.as_view(),
         name="preference-detail",
+    ),
+    path(
+        "recommendations/generate/",
+        RecommendationGenerateView.as_view(),
+        name="recommendation-generate",
+    ),
+    path(
+        "recommendations/",
+        RecommendationListView.as_view(),
+        name="recommendation-list",
+    ),
+    path(
+        "recommendations/<int:pk>/",
+        RecommendationDetailView.as_view(),
+        name="recommendation-detail",
     ),
     path(
         "messages/",

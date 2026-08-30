@@ -1,19 +1,19 @@
-"""Service layer for the Tenant Preference module (Phase 4, Sprint 4.4).
+"""Service layer for the Recommendation module (Phases 4-5).
 
-This module keeps business logic out of views and templates (AGENTS 6). Its
-purpose here is to prepare a tenant's stored preference as the structured query
-information that the Weighted KNN recommendation component (Phase 5) will
-consume.
+This module keeps business logic out of views and templates (AGENTS 6).
 
-It deliberately does NOT implement the recommendation algorithm. Feature
-extraction, categorical encoding, normalisation, weighting and distance
-calculation are all Phase 5 (Sprint 5.x) responsibilities. This service only
-produces the preference payload, in a stable and testable shape, that the next
-phase will turn into the query vector ``U = (u1, ..., un)`` (AGENTS 12).
+- ``prepare_preference_data`` (Sprint 4.4) prepares a tenant's stored preference
+  as the structured query information consumed by the Weighted KNN component.
+- ``generate_recommendations`` (Sprint 5.6) is the recommendation service layer:
+  it runs the Weighted KNN engine over the candidate apartments, persists the
+  resulting ``Recommendation`` / ``RecommendationItem`` records, and raises clear
+  exceptions the API layer turns into user-facing errors.
 """
-from decimal import Decimal
-
 from apps.apartments.models import Apartment
+from ml.features import DEFAULT_K
+from ml.ranking import recommend as run_ranking_engine
+
+from .models import Preference, Recommendation, RecommendationItem
 
 
 def _as_str(value):
@@ -65,3 +65,48 @@ def apartment_type_labels():
     consistent with the listing schema (AGENTS 13).
     """
     return Apartment.ApartmentType.choices
+
+
+class NoPreferenceError(Exception):
+    """Raised when a tenant has no stored preference to recommend from."""
+
+
+def generate_recommendations(tenant, preference):
+    """Run the Weighted KNN engine for a tenant's preference and persist the run.
+
+    Returns the created ``Recommendation`` (with its ``items``). The engine
+    applies hard filters and ranks the eligible apartments (``ml.ranking``);
+    every ranked candidate is persisted as a ``RecommendationItem`` with its
+    1-based rank, weighted distance and similarity. When nothing is eligible,
+    a ``Recommendation`` with no items is still returned so the flow is
+    observable and the API can communicate the empty result gracefully.
+    """
+    if preference is None:
+        raise NoPreferenceError(
+            "Save an apartment preference first so we can personalise "
+            "recommendations."
+        )
+    if preference.tenant_id != tenant.id:
+        raise NoPreferenceError("The preference does not belong to this tenant.")
+
+    results = run_ranking_engine(Apartment.objects.all(), preference)
+
+    recommendation = Recommendation.objects.create(
+        tenant=tenant,
+        preference=preference,
+        algorithm=Recommendation.Algorithm.WEIGHTED_KNN,
+        k=DEFAULT_K,
+    )
+    RecommendationItem.objects.bulk_create(
+        [
+            RecommendationItem(
+                recommendation=recommendation,
+                apartment=result["apartment"],
+                rank=result["rank"],
+                distance=result["distance"],
+                similarity=result["similarity"],
+            )
+            for result in results
+        ]
+    )
+    return recommendation
