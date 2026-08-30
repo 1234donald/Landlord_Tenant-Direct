@@ -372,9 +372,25 @@ Phase 2 (Authentication and User Management) is in progress.
    and required facilities — consistent with the existing search/filter
    logic). `DEFAULT_K=5` is set as the configurable neighbour count. 21
    feature-specification tests (314 total); no database changes.
+- **Sprint 5.2 (completed):** Feature extraction and encoding — the
+   feature-processing pipeline implementated in `ml/preprocessing.py`.
+   It builds the apartment candidate vector `A` (`apartment_feature_vector` /
+   `encode_apartment_vector`) and the tenant query vector `U`
+   (`preference_feature_vector` / `encode_tenant_vector`), one-hot encodes the
+   categorical `apartment_type` into its six columns
+   (`one_hot_encode_apartment_type`), encodes binary facilities as 0/1
+   (`encode_binary`), and handles missing (unstated) tenant preferences:
+   nullable values are preserved as `None` and reported through an `active`
+   mask so unstated dimensions can be neutralised at weighting time
+   (`validate_encoded_pair` guards vector shape consistency). Numerical values
+   are emitted as raw floats (min-max normalisation is Sprint 5.3). All
+   encoding draws on the Sprint 5.1 feature constants. 13 preprocessing tests
+   (327 total); no database changes.
 
-Sprint 5.1 completes the recommendation *specification*. The Weighted KNN
-feature list, DB mapping, classification, weights and hard filters are
-confirmed and documented. The extraction/encoding logic (Sprint 5.2+), the
-distance/ranking implementation and the recommendation API/UI remain in
-this phase; frontend dashboards and administration are later phases.
+Sprint 5.2 completes the recommendation feature extraction/encoding layer
+(the feature-processing pipeline deliverable). Tenants and apartments are
+now converted into comparable encoded vectors with correct categorical and
+binary encoding and explicit missing-value handling. Numerical normalisation
+(Sprint 5.3), the weighted distance (Sprint 5.4), ranking (Sprint 5.5) and
+the recommendation API/UI remain in this phase; frontend dashboards and
+administration are later phases.
