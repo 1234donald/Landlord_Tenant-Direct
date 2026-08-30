@@ -247,9 +247,21 @@ Phase 2 (Authentication and User Management) is in progress.
   `availability` flag, with `created_at`/`updated_at` timestamps. Validation
   (via `clean()`) enforces a positive rental price and valid bedroom/bathroom
   counts. Indexes cover `location`, `rental_price`, `apartment_type`, `landlord`
-  and `availability` for search/filtering. Registered in Django Admin; migration
-  `apartments.0001_initial` applied. 16 model tests (114 total).
+   and `availability` for search/filtering. Registered in Django Admin; migration
+   `apartments.0001_initial` applied. 16 model tests (114 total).
+- **Sprint 3.4 (completed):** Apartment creation and media — the landlord-only
+  `POST /api/v1/apartments/` endpoint creates a listing owned by the
+  authenticated landlord (ownership is never client-supplied) and accepts
+  multimedia image uploads. Includes the `ApartmentImage` model
+  (`apartment` FK, `image` ImageField, `order`, `uploaded_at`; migration
+  `apartments.0002_apartmentimage` applied) and validated image uploads for
+  file type/extension, a 5 MB size limit, and real image-content verification
+  via Pillow (rejects arbitrary/non-image payloads disguised as images).
+  Listing validation (positive price, ≥1 bedrooms/bathrooms, valid type) is
+  enforced in `apps/apartments/serializers.py`. Invalid uploads never leave a
+  partial listing behind. Registered in Django Admin; 14 apartment creation
+  API tests (128 total).
 
-Features (apartment CRUD/API, search, recommendations, messaging) are not yet
-implemented; the verification workflow/API and the apartment data model are
-complete.
+Features (apartment update/delete/availability, search, recommendations,
+messaging) are not yet implemented; the verification workflow/API and
+apartment creation with media are complete.

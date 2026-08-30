@@ -121,3 +121,33 @@ class Apartment(models.Model):
 
         if errors:
             raise ValidationError(errors)
+
+
+class ApartmentImage(models.Model):
+    """An image attached to an apartment listing.
+
+    Each apartment may have multiple images, ordered by the ``order`` value.
+    Uploads are validated on the way in (see ``apps.apartments.serializers``)
+    and stored under the media root so they are served during development.
+    """
+
+    apartment = models.ForeignKey(
+        Apartment,
+        on_delete=models.CASCADE,
+        related_name="images",
+    )
+    image = models.ImageField(
+        upload_to="apartments/",
+        help_text="Apartment photo.",
+    )
+    order = models.PositiveIntegerField(default=0)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["order", "id"]
+        indexes = [
+            models.Index(fields=["apartment"]),
+        ]
+
+    def __str__(self):
+        return f"Image for {self.apartment_id} ({self.pk})"

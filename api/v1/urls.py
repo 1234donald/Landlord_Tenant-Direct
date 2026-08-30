@@ -18,6 +18,7 @@ from apps.accounts.views import (
     UserDetailView,
     UserListView,
 )
+from apps.apartments.views import ApartmentCreateView
 from apps.verification.views import (
     AdminVerificationApproveView,
     AdminVerificationListView,
@@ -68,5 +69,10 @@ urlpatterns = [
         "admin/verifications/<int:pk>/reject/",
         AdminVerificationRejectView.as_view(),
         name="admin-verification-reject",
+    ),
+    path(
+        "apartments/",
+        ApartmentCreateView.as_view(),
+        name="apartment-create",
     ),
 ]

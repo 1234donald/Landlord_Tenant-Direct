@@ -1,6 +1,16 @@
 from django.contrib import admin
 
-from .models import Apartment
+from .models import Apartment, ApartmentImage
+
+
+@admin.register(ApartmentImage)
+class ApartmentImageAdmin(admin.ModelAdmin):
+    """Admin configuration for apartment images."""
+
+    list_display = ["id", "apartment", "order", "uploaded_at"]
+    list_filter = ["uploaded_at"]
+    search_fields = ["apartment__title", "apartment__landlord__email"]
+    readonly_fields = ["uploaded_at"]
 
 
 @admin.register(Apartment)
