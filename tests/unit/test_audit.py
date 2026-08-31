@@ -23,6 +23,7 @@ from apps.audit.services import (
     log_data_event,
     log_event,
     log_system_event,
+    user_id_or_system,
 )
 
 User = get_user_model()
@@ -237,3 +238,27 @@ class ReferentialIntegrityTests(TestCase):
                 bathrooms=1,
             )
             invalid.full_clean()
+
+
+class UserIdOrSystemTests(TestCase):
+    """Direct unit coverage for ``user_id_or_system`` (Sprint 7.1)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
+            email="actor@example.com",
+            password=PASSWORD,
+            full_name="Actor",
+            role=User.Role.TENANT,
+        )
+
+    def test_real_user_returns_its_pk(self):
+        self.assertEqual(user_id_or_system(self.user), self.user.pk)
+
+    def test_none_returns_system(self):
+        self.assertEqual(user_id_or_system(None), "system")
+
+    def test_object_without_pk_returns_system(self):
+        from types import SimpleNamespace
+
+        self.assertEqual(user_id_or_system(SimpleNamespace()), "system")

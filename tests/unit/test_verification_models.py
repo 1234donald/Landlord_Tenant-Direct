@@ -154,3 +154,59 @@ class VerificationRequestModelTests(django_tests.TestCase):
         for disallowed in ("ownership_document", "title_deed",
                            "legal_verified", "ownership_verified"):
             self.assertNotIn(disallowed, field_names)
+
+
+class VerificationRequestApproveRejectTests(django_tests.TestCase):
+    """Unit coverage for the administrative approve()/reject() methods.
+
+    These were previously exercised only through the integration/admin
+    workflow tests. Here the state-transition logic is verified directly,
+    including the guard that only PENDING requests may be reviewed
+    (SYSTEM_REQUIREMENTS 41).
+    """
+
+    def setUp(self):
+        self.landlord = make_landlord()
+        self.admin = make_admin()
+
+    def test_approve_pending_sets_status_reviewer_and_time(self):
+        request = VerificationRequest.objects.create(landlord=self.landlord)
+        request.approve(admin=self.admin)
+        request.refresh_from_db()
+        self.assertEqual(request.status, VerificationRequest.Status.APPROVED)
+        self.assertTrue(request.is_approved)
+        self.assertEqual(request.reviewed_by, self.admin)
+        self.assertIsNotNone(request.reviewed_at)
+
+    def test_approve_non_pending_raises_value_error(self):
+        request = VerificationRequest.objects.create(
+            landlord=self.landlord,
+            status=VerificationRequest.Status.APPROVED,
+        )
+        with self.assertRaises(ValueError):
+            request.approve(admin=self.admin)
+
+    def test_reject_pending_with_remarks(self):
+        request = VerificationRequest.objects.create(landlord=self.landlord)
+        request.reject(admin=self.admin, remarks="Incomplete documents")
+        request.refresh_from_db()
+        self.assertEqual(request.status, VerificationRequest.Status.REJECTED)
+        self.assertTrue(request.is_rejected)
+        self.assertEqual(request.remarks, "Incomplete documents")
+        self.assertEqual(request.reviewed_by, self.admin)
+        self.assertIsNotNone(request.reviewed_at)
+
+    def test_reject_pending_without_remarks_defaults_to_blank(self):
+        request = VerificationRequest.objects.create(landlord=self.landlord)
+        request.reject(admin=self.admin)
+        request.refresh_from_db()
+        self.assertEqual(request.status, VerificationRequest.Status.REJECTED)
+        self.assertEqual(request.remarks, "")
+
+    def test_reject_non_pending_raises_value_error(self):
+        request = VerificationRequest.objects.create(
+            landlord=self.landlord,
+            status=VerificationRequest.Status.REJECTED,
+        )
+        with self.assertRaises(ValueError):
+            request.reject(admin=self.admin, remarks="late remarks")

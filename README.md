@@ -573,6 +573,27 @@ Phase 2 (Authentication and User Management) is in progress.
     intact. Full regression suite green (unit, API, ML and integration);
     `manage.py check` reports no issues. No schema changes; no new dependencies.
 
+- **Sprint 7.1 (completed):** Unit-test suite — completed the Phase 7 unit-test
+    deliverable (SYSTEM_REQUIREMENTS §41) covering models, forms, serializers,
+    services, permissions, recommendation functions and preprocessing
+    functions. Added direct serializer tests for every module
+    (`tests/unit/test_accounts_serializers.py`, `test_apartment_serializers.py`
+    including image-upload validation, `test_messaging_serializers.py`,
+    `test_recommendation_serializers.py`, `test_verification_serializers.py`),
+    direct permission-class tests for all nine permission classes
+    (`tests/unit/test_permissions.py`), and model unit tests for
+    `ApartmentImage` and `Recommendation`/`RecommendationItem`
+    (`test_apartment_image_models.py`, `test_recommendation_models.py`).
+    Extended existing unit suites with `VerificationRequest.approve()/reject()`
+    (`test_verification_models.py`), `user_id_or_system`
+    (`test_audit.py`), and direct ML internal-helper/preprocessing coverage
+    (`normalise_features`, `_base_weight_name`, `_weight_for` in
+    `test_normalisation.py`/`test_weighted_distance.py`). The project has no
+    Django `Form` classes — data validation is handled through DRF serializers,
+    which are now unit-tested directly. Full unit+ML regression suite green
+    (393 tests + 2 subtests); `manage.py check` reports no issues and no schema
+    changes are required. (Test counts reflect the committed unit+ML suites.)
+
 Sprint 6.3 hardens the application configuration and adds a verification suite
 for the §27 security controls. Sprint 6.4 then hardens the REST API itself —
 consistent error envelopes, auth-endpoint throttling, collection pagination and

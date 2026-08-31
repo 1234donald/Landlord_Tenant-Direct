@@ -20,6 +20,8 @@ from ml.preprocessing import (
     one_hot_columns,
 )
 from ml.weighted_knn import (
+    _base_weight_name,
+    _weight_for,
     resolve_weights,
     similarity,
     weighted_distance,
@@ -178,3 +180,38 @@ class PipelineIntegrationTests(django_tests.TestCase):
         self.assertTrue(math.isfinite(d_distant))
         self.assertGreaterEqual(d_match, 0.0)
         self.assertLess(d_match, d_distant)
+
+
+class BaseWeightNameTests(django_tests.TestCase):
+    """Direct coverage for the encoded-dimension -> base-weight mapping (Sprint 7.1)."""
+
+    def test_one_hot_column_maps_to_apartment_type(self):
+        self.assertEqual(
+            _base_weight_name("apartment_type_TWO_BEDROOM"), "apartment_type"
+        )
+        self.assertEqual(
+            _base_weight_name("apartment_type_SELF_CONTAINED"), "apartment_type"
+        )
+
+    def test_non_categorical_dimension_maps_to_itself(self):
+        self.assertEqual(_base_weight_name("rental_price"), "rental_price")
+        self.assertEqual(_base_weight_name("bedrooms"), "bedrooms")
+        self.assertEqual(_base_weight_name("parking"), "parking")
+
+
+class WeightForTests(django_tests.TestCase):
+    """Direct coverage for the weight lookup helper (Sprint 7.1)."""
+
+    def test_looks_up_base_weight_for_categorical_column(self):
+        weights = full_weights(apartment_type=4.0)
+        self.assertEqual(
+            _weight_for("apartment_type_DUPLEX", weights), 4.0
+        )
+
+    def test_looks_up_own_weight_for_regular_dimension(self):
+        weights = full_weights(rental_price=3.0, parking=1.0)
+        self.assertEqual(_weight_for("rental_price", weights), 3.0)
+        self.assertEqual(_weight_for("parking", weights), 1.0)
+
+    def test_unknown_dimension_returns_zero(self):
+        self.assertEqual(_weight_for("unknown_dim", full_weights()), 0.0)

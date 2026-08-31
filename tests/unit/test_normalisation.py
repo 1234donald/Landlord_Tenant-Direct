@@ -20,7 +20,11 @@ from ml.preprocessing import (
     min_max_normalise,
     one_hot_columns,
 )
-from ml.preprocessing import normalise_apartments, normalise_tenant_vector
+from ml.preprocessing import (
+    normalise_apartments,
+    normalise_features,
+    normalise_tenant_vector,
+)
 
 User = get_user_model()
 PASSWORD = "StrongPass123!"
@@ -196,3 +200,65 @@ class NormaliseTenantTests(django_tests.TestCase):
         bounds = feature_bounds([a_vector])
         # An identical apartment query maps to the same normalised frame.
         self.assertEqual(bounds["rental_price"], (200000.0, 200000.0))
+
+
+class NormaliseFeaturesDirectTests(django_tests.TestCase):
+    """Direct unit coverage for ``normalise_features`` (Sprint 7.1).
+
+    Verifies that only numerical features are rescaled while categorical
+    (one-hot) and binary dimensions pass through unchanged, and that missing
+    (``None``) values are preserved (AGENTS 14).
+    """
+
+    def setUp(self):
+        self.bounds = {
+            "rental_price": (100000.0, 300000.0),
+            "bedrooms": (1.0, 3.0),
+            "bathrooms": (1.0, 3.0),
+        }
+
+    def _vector(self, **overrides):
+        vector = {
+            "rental_price": 200000.0,
+            "bedrooms": 2.0,
+            "bathrooms": 2.0,
+        }
+        for column in one_hot_columns():
+            vector[column] = 0
+        vector["apartment_type_TWO_BEDROOM"] = 1
+        binary = {feature: 0 for feature in BINARY_FEATURES}
+        binary["parking"] = 1
+        vector.update(binary)
+        vector.update(overrides)
+        return vector
+
+    def test_numerical_features_are_rescaled(self):
+        out = normalise_features(self._vector(), self.bounds)
+        self.assertAlmostEqual(out["rental_price"], 0.5)
+        self.assertAlmostEqual(out["bedrooms"], 0.5)
+        self.assertAlmostEqual(out["bathrooms"], 0.5)
+
+    def test_binary_and_categorical_dimensions_unchanged(self):
+        out = normalise_features(self._vector(), self.bounds)
+        self.assertEqual(out["parking"], 1)
+        self.assertEqual(out["water"], 0)
+        self.assertEqual(out["apartment_type_TWO_BEDROOM"], 1)
+        self.assertEqual(out["apartment_type_ONE_BEDROOM"], 0)
+
+    def test_divisor_zero_produces_zero_for_constant_feature(self):
+        # Constant feature: lower == upper -> normalises to 0.0, not a crash.
+        constant = dict(self.bounds)
+        constant["bedrooms"] = (2.0, 2.0)
+        out = normalise_features(self._vector(), constant)
+        self.assertEqual(out["bedrooms"], 0.0)
+
+    def test_missing_values_are_preserved(self):
+        vector = self._vector(rental_price=None)
+        out = normalise_features(vector, self.bounds)
+        self.assertIsNone(out["rental_price"])
+
+    def test_returns_a_copy_does_not_mutate_input(self):
+        vector = self._vector()
+        original = dict(vector)
+        normalise_features(vector, self.bounds)
+        self.assertEqual(vector, original)
