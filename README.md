@@ -530,11 +530,37 @@ Phase 2 (Authentication and User Management) is in progress.
     JWT protections (expired access token rejected). (497 total); no database
     changes.
 
+- **Sprint 6.5 (completed):** Audit, logging and data integrity — added an
+    operational audit and logging foundation. Created a new `apps/audit` app with
+    an append-only `AuditEvent` model (category, action, acting user, optional
+    target content-type/object-id, client IP, extra JSON context and timestamp)
+    and an audit-logging service (`apps/audit/services.py`) with `log_event` /
+    `log_auth_event` / `log_admin_event` / `log_data_event` / `log_system_event`
+    helpers and a `get_client_ip` helper that honours `X-Forwarded-For` behind a
+    reverse proxy. Emitted authentication audit events from the REST API —
+    successful registration, successful/failed login, and logout — in
+    `apps/accounts/views.py`, and administrative audit events from the
+    Administrator console — user status toggle, apartment moderation, and
+    verification approve/reject — in `apps/admin_dashboard/views.py`. Added an
+    application-wide `LOGGING` configuration to `config/settings/base.py`
+    (console handler, root logger, plus a tuned `apps.audit` logger) and
+    registered `apps.audit` in `INSTALLED_APPS`; its migration is applied.
+    Registered `AuditEvent` in Django Admin as read-only (no add/change/delete)
+    to keep the trail immutable. Documented and verified the database
+    referential-integrity and deletion-behaviour contract (FK `on_delete`
+    choices, unique pair constraints, indexes) plus the audit pipeline.
+    `tests/unit/test_audit.py` (16 tests) covers the model, the logging service,
+    the client-IP helper and referential integrity; `tests/integration/
+    test_audit_logging.py` (11 tests) verifies events are emitted by real
+    registration/login/logout and admin action flows (and that forbidden actions
+    emit nothing). (535 total, no DB changes beyond the `apps.audit` migration).
+
 Sprint 6.3 hardens the application configuration and adds a verification suite
 for the §27 security controls. Sprint 6.4 then hardens the REST API itself —
 consistent error envelopes, auth-endpoint throttling, collection pagination and
-JWT verification together complete Sprint 6.4; the remaining Phase 6 work is
-Sprint 6.5 (audit, logging and data integrity).
+JWT verification together complete Sprint 6.4. Sprint 6.5 adds the audit,
+logging and data-integrity foundation; the remaining Phase 6 work is
+Sprint 6.6 (full system integration).
 
 Sprint 5.4 completes the recommendation weighted-distance engine. A tenant
 query vector and each apartment candidate can now be compared by a weighted

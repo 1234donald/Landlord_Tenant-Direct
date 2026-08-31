@@ -63,6 +63,7 @@ INSTALLED_APPS = [
       "apps.recommendations",
       "apps.messaging",
       "apps.admin_dashboard",
+      "apps.audit",
   ]
 
 MIDDLEWARE = [
@@ -204,5 +205,52 @@ SPECTACULAR_SETTINGS = {
 MAILERS = {
     "default": {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
+    },
+}
+
+# ---------------------------------------------------------------------------
+# Logging (Phase 6, Sprint 6.5 - Audit, Logging and Data Integrity)
+# ---------------------------------------------------------------------------
+# Application-wide logging configuration. The root logger captures actionable
+# INFO messages to the console. An `apps.audit` logger exists so audit-event
+# emissions can be filtered/tuned independently. Production overrides the
+# handler configuration (see production.py) but reuses this structure.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": (
+                "{levelname} {asctime} {name} {module} "
+                "{process:d} {thread:d} {message}"
+            ),
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {asctime} {name}: {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "apps.audit": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }

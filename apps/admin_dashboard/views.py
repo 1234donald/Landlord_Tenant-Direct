@@ -32,6 +32,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView, TemplateView
 
+from apps.audit.services import get_client_ip, log_admin_event
 from apps.apartments.models import Apartment
 from apps.messaging.models import Conversation, Message
 from apps.verification.models import VerificationRequest
@@ -220,6 +221,14 @@ class UserStatusActionView(AdminOnlyMixin, TemplateView):
         user.is_active = not user.is_active
         user.save(update_fields=["is_active", "updated_at"])
         state = "enabled" if user.is_active else "disabled"
+        log_admin_event(
+            action=f"User account {state}",
+            user=request.user,
+            target_content_type="accounts.User",
+            target_object_id=user.pk,
+            ip_address=get_client_ip(request),
+            extra={"email": user.email, "is_active": user.is_active},
+        )
         messages.success(request, f"User {user.email} {state}.")
         return redirect("admin_dashboard:users")
 
@@ -242,6 +251,14 @@ class ApartmentModerationView(AdminOnlyMixin, TemplateView):
         apartment.availability = not apartment.availability
         apartment.save(update_fields=["availability", "updated_at"])
         state = "made available" if apartment.availability else "hidden (unavailable)"
+        log_admin_event(
+            action=f"Apartment listing {state}",
+            user=request.user,
+            target_content_type="apartments.Apartment",
+            target_object_id=apartment.pk,
+            ip_address=get_client_ip(request),
+            extra={"title": apartment.title, "availability": apartment.availability},
+        )
         messages.success(request, f"Listing '{apartment.title}' {state}.")
         return redirect("admin_dashboard:apartments")
 
@@ -268,10 +285,29 @@ class VerificationActionView(AdminOnlyMixin, TemplateView):
 
         if action == "approve":
             verification.approve(admin=request.user)
+            log_admin_event(
+                action="Verification approved",
+                user=request.user,
+                target_content_type="verification.VerificationRequest",
+                target_object_id=verification.pk,
+                ip_address=get_client_ip(request),
+                extra={"landlord_email": verification.landlord.email},
+            )
             messages.success(request, "Verification approved.")
         elif action == "reject":
             remarks = request.POST.get("remarks", "").strip()
             verification.reject(admin=request.user, remarks=remarks)
+            log_admin_event(
+                action="Verification rejected",
+                user=request.user,
+                target_content_type="verification.VerificationRequest",
+                target_object_id=verification.pk,
+                ip_address=get_client_ip(request),
+                extra={
+                    "landlord_email": verification.landlord.email,
+                    "remarks": remarks,
+                },
+            )
             messages.success(request, "Verification rejected.")
         else:
             messages.error(request, "Unknown review action.")

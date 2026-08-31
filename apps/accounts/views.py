@@ -10,6 +10,7 @@ from rest_framework_simplejwt.serializers import (
     TokenRefreshSerializer,
 )
 
+from apps.audit.services import get_client_ip, log_auth_event
 from apps.core.api import paginated_payload
 
 from .permissions import IsAdmin, IsLandlord, IsOwnerOrAdmin, IsTenant
@@ -34,7 +35,13 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            instance = serializer.save()
+            log_auth_event(
+                action=f"Account registered (role={instance.role})",
+                user=instance,
+                ip_address=get_client_ip(request),
+                extra={"email": instance.email},
+            )
             return Response(
                 {
                     "success": True,
@@ -69,6 +76,12 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data["user"]
+            log_auth_event(
+                action="Login successful",
+                user=user,
+                ip_address=get_client_ip(request),
+                extra={"email": user.email},
+            )
             return Response(
                 {
                     "success": True,
@@ -86,6 +99,11 @@ class LoginView(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
+        log_auth_event(
+            action="Login failed",
+            ip_address=get_client_ip(request),
+            extra={"email": serializer.data.get("email")},
+        )
         return Response(
             {
                 "success": False,
@@ -152,6 +170,11 @@ class LogoutView(APIView):
         except TokenError:
             errors = {"refresh": "Invalid or expired refresh token."}
         if is_valid:
+            log_auth_event(
+                action="Logout successful",
+                user=getattr(request, "user", None),
+                ip_address=get_client_ip(request),
+            )
             return Response(
                 {"success": True, "message": "Logout successful.", "data": {}},
                 status=status.HTTP_200_OK,
