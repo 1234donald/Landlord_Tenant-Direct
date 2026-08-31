@@ -615,6 +615,27 @@ Phase 2 (Authentication and User Management) is in progress.
     `test_register.py`: 98 passed); `manage.py check` reports no issues and no
     schema changes are required.
 
+- **Sprint 7.3 (completed):** System and end-to-end testing — delivered the
+    Phase 7.3 end-to-end system-test evidence (SYSTEM_REQUIREMENTS §41) as a
+    dedicated suite, `tests/integration/test_system_e2e.py` (3 tests). It runs
+    all three specified journeys from start to finish through the real HTTP API
+    (JWT) and the presentation/administrator console pages (session auth):
+    the tenant journey (Register → Login → Search → Filter → Preferences →
+    Recommendation → Apartment Details → Message Landlord), the landlord
+    journey (Register → Verification → Create Apartment → Manage Apartment →
+    Receive & Reply to Message — exercising listing edit and availability
+    updates), and the administrator journey (Login → Manage Users → Review
+    Verification → Manage Listings — toggling a user's status, approving
+    verification and moderating a listing on the console). Unlike the Sprint
+    6.6 integration suite, 7.3 exercises the management actions as part of the
+    journeys and drives the administrator console pages end to end. All
+    asserted counts are read from the real database/HTTP responses (no
+    fabricated results — AGENTS 39, 40). New suite green (3 passed); relevant
+    integration regression green (`test_full_system_integration.py`,
+    `test_tenant_journey.py`, `test_admin_dashboard.py`,
+    `test_admin_workflows.py`: 39 passed + 32 subtests); `manage.py check`
+    reports no issues and no schema changes are required.
+
 Sprint 6.3 hardens the application configuration and adds a verification suite
 for the §27 security controls. Sprint 6.4 then hardens the REST API itself —
 consistent error envelopes, auth-endpoint throttling, collection pagination and
