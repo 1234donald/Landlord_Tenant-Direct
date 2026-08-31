@@ -49,6 +49,10 @@ landlord_tenant_project/
 ├── docs/
 │   ├── usability_evaluation_questionnaire.md
 │   └── ml_evaluation_results.md
+├── deploy/                 (production deployment reference, Sprint 7.7)
+│   ├── README.md           (deployment guide: env, DB, backups, logging)
+│   ├── gunicorn.conf.py    (Gunicorn worker configuration)
+│   └── nginx.conf          (Nginx TLS + proxy configuration)
 ├── requirements.txt
 ├── config/
 │   ├── settings/
@@ -170,7 +174,15 @@ The recommendation engine will operate on actual apartment records stored in the
 
 ## Deployment
 
-> Production configuration and deployment are handled in later phases. Approved target: Render with managed PostgreSQL, Gunicorn, WhiteNoise, HTTPS; Nginx as the documented self-hosted alternative.
+The production target is **Linux: Gunicorn + Nginx + PostgreSQL + HTTPS + environment variables**, with WhiteNoise serving static files from within Django (AGENTS 44). Render with managed PostgreSQL is the approved hosted alternative; Nginx is the documented self-hosted option.
+
+- Production settings: `config/settings/production.py` (secure cookies, HSTS, SSL redirect, WhiteNoise, environment-sourced secrets).
+- Full deployment guide: **[`deploy/README.md`](deploy/README.md)** — environment variables, DB, migrations, `collectstatic`, backups and logging.
+- Reference configurations: [`deploy/gunicorn.conf.py`](deploy/gunicorn.conf.py) and [`deploy/nginx.conf`](deploy/nginx.conf).
+- Deployment readiness is verified automatically by [`tests/integration/test_deployment_readiness.py`](tests/integration/test_deployment_readiness.py), which runs `manage.py check --deploy` and confirms **zero Django security warnings**, no pending migrations, a complete `.env.example` contract, gitignored `.env`, and no hard-coded secrets.
+
+> **Honest deployment status (AGENTS 39, 40):** A live, internet-accessible deployment has **not** been performed from this local Windows development environment (no server, domain, TLS certificate or managed PostgreSQL here). The system is **deployment-ready** — the production configuration is verified by Django's security checks and the automated readiness suite — but it is **not yet claimed as deployed**. Performing the live deploy is a documented operator step in `deploy/README.md`.
+
 
 ## Current development status
 
@@ -714,6 +726,32 @@ Phase 2 (Authentication and User Management) is in progress.
     `test_weighted_distance.py`, `test_recommendation_service.py`:
     66 passed); `manage.py check` reports no issues and no schema changes are
     required.
+
+- **Sprint 7.7 (completed):** Production deployment and finalisation —
+    delivered the production deployment *foundation* for the approved
+    Linux target (Gunicorn + Nginx + PostgreSQL + HTTPS + environment
+    variables; AGENTS 44). Because a live, internet-accessible deploy is not
+    possible from this local Windows environment, the sprint honestly delivers
+    a **deployment-ready package** rather than a claimed live deployment
+    (AGENTS 39, 40). (1) An automated deployment-readiness suite,
+    `tests/integration/test_deployment_readiness.py` (12 tests), verifies
+    objectively: `manage.py check` passes with no issues; `manage.py check
+    --deploy` under the production settings reports **zero Django `security.*`
+    warnings and zero errors** (the only remaining notices are pre-existing,
+    cosmetic `drf_spectacular` OpenAPI-schema warnings that do not affect
+    security or function); no pending migrations and committed migrations for
+    every model-bearing app (verified via Django's app registry); `.env.example`
+    declares every production variable; `.env` is git-ignored; production
+    secrets are read from the environment, never hard-coded; the production
+    secure-cookie/HSTS/SSL-redirect hardening flags and WhiteNoise are
+    configured; and Gunicorn, WhiteNoise and the PostgreSQL driver are pinned.
+    (2) A reference deployment package under `deploy/` — `gunicorn.conf.py`,
+    `nginx.conf` and a `README.md` deployment guide covering environment
+    variables, database setup, migrations, `collectstatic`, HTTPS, backups and
+    logging. Production static collection verified (`collectstatic --dry-run`,
+    163 files). `manage.py check` reports no issues and no schema changes are
+    required. Report summary: **NOT DEPLOYED** (deployment-ready only — see
+    README "Deployment" section); code/README/logging finalized.
 
 Sprint 6.3 hardens the application configuration and adds a verification suite
 for the §27 security controls. Sprint 6.4 then hardens the REST API itself —
