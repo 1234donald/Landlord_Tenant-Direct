@@ -113,3 +113,8 @@ class RegistrationApiTests(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_unsupported_method_on_register_returns_405(self):
+        response = self.client.get(REGISTER_URL)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertFalse(response.data["success"])

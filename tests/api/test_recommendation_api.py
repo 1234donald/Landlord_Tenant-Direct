@@ -167,6 +167,20 @@ class RecommendationApiTests(APITestCase):
         response = self.client.get(LIST_URL)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_recommendation_list_is_paginated(self):
+        self._preference()
+        self._auth_as(self.tenant)
+        self.client.post(GENERATE_URL, {}, format="json")
+        response = self.client.get(LIST_URL, {"page": 1})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["success"])
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["page"], 1)
+        self.assertEqual(response.data["pages"], 1)
+        self.assertIsNone(response.data["next"])
+        self.assertIsNone(response.data["previous"])
+        self.assertEqual(len(response.data["data"]), 1)
+
     # --- Detail ---
 
     def test_owner_can_retrieve_detail(self):

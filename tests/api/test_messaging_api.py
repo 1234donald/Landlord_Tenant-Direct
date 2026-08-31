@@ -239,6 +239,24 @@ class MessagingApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Conversation.objects.count(), 1)
 
+    def test_create_conversation_without_counterpart_returns_400(self):
+        self._auth_as(self.tenant)
+        response = self.client.post(CONVERSATIONS_URL, {}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(response.data["success"])
+        self.assertIn("counterpart", response.data["errors"])
+
+    def test_create_conversation_with_same_role_counterpart_returns_400(self):
+        self._auth_as(self.tenant)
+        response = self.client.post(
+            CONVERSATIONS_URL,
+            {"counterpart": self.other_tenant.pk},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(response.data["success"])
+        self.assertIn("counterpart", response.data["errors"])
+
     # --- Conversation detail (GET /conversations/{id}/) ---
 
     def test_participant_can_retrieve_conversation_history(self):

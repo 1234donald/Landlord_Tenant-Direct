@@ -594,6 +594,27 @@ Phase 2 (Authentication and User Management) is in progress.
     (393 tests + 2 subtests); `manage.py check` reports no issues and no schema
     changes are required. (Test counts reflect the committed unit+ML suites.)
 
+- **Sprint 7.2 (completed):** Integration and API testing — completed the
+    Phase 7.2 deliverable (SYSTEM_REQUIREMENTS §41) by closing API test-coverage
+    gaps across the Sprint 7.2 categories (registration/login, apartments,
+    tenant/preferences, preferences/recommendation, tenant/landlord messaging,
+    administrator/verification and REST API endpoints). Added page-based
+    pagination coverage for the preference list, the recommendation list and
+    the administrator verification list (`test_preference_api.py`,
+    `test_recommendation_api.py`, `test_verification_api.py`), 405
+    method-not-allowed coverage for the login and register endpoints
+    (`test_auth.py`, `test_register.py`), and messaging validation for a
+    missing or same-role conversation counterpart (`test_messaging_api.py`).
+    Introduced reusable shared API test infrastructure — `tests/api/base.py`
+    (`BaseApiTestCase` with role factories and JWT authentication) and
+    `tests/conftest.py` (shared pytest fixtures) — and refactored
+    `test_profile.py` to reuse those helpers instead of duplicating them.
+    Verified the affected API files green (`test_recommendation_api.py`:
+    16 passed; `test_verification_api.py`/`test_preference_api.py`/
+    `test_messaging_api.py`/`test_profile.py`/`test_auth.py`/
+    `test_register.py`: 98 passed); `manage.py check` reports no issues and no
+    schema changes are required.
+
 Sprint 6.3 hardens the application configuration and adds a verification suite
 for the §27 security controls. Sprint 6.4 then hardens the REST API itself —
 consistent error envelopes, auth-endpoint throttling, collection pagination and

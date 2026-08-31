@@ -116,3 +116,8 @@ class AuthApiTests(APITestCase):
         self.user.save()
         response = self._login()
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_unsupported_method_on_login_returns_405(self):
+        response = self.client.get(LOGIN_URL)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertFalse(response.data["success"])

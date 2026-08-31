@@ -130,6 +130,26 @@ class VerificationApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["data"]), 1)
 
+    def test_admin_verification_list_is_paginated(self):
+        second_landlord = User.objects.create_user(
+            email="otherlandlord@example.com",
+            password=PASSWORD,
+            full_name="Other Landlord",
+            role=User.Role.LANDLORD,
+        )
+        self._create_request(landlord=self.landlord)
+        self._create_request(landlord=second_landlord)
+        self._auth_as(self.admin)
+        response = self.client.get(ADMIN_LIST_URL, {"page": 1})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["success"])
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(response.data["page"], 1)
+        self.assertEqual(response.data["pages"], 1)
+        self.assertIsNone(response.data["next"])
+        self.assertIsNone(response.data["previous"])
+        self.assertEqual(len(response.data["data"]), 2)
+
     def test_admin_list_filters_by_status(self):
         self._auth_as(self.admin)
         self._create_request(status_=VerificationRequest.Status.PENDING)

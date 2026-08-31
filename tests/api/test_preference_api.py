@@ -186,6 +186,20 @@ class PreferenceApiTests(APITestCase):
         response = self.client.get(PREFERENCE_LIST_URL)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_preference_list_is_paginated(self):
+        self._create_preference(tenant=self.tenant, location="Calabar")
+        self._create_preference(tenant=self.tenant, location="Uyo")
+        self._auth_as(self.tenant)
+        response = self.client.get(PREFERENCE_LIST_URL, {"page": 1})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["success"])
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(response.data["page"], 1)
+        self.assertEqual(response.data["pages"], 1)
+        self.assertIsNone(response.data["next"])
+        self.assertIsNone(response.data["previous"])
+        self.assertEqual(len(response.data["data"]), 2)
+
     # --- Retrieve / Update / Delete ---
 
     def _detail_url(self, preference):

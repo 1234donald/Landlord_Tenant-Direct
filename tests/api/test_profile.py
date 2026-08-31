@@ -7,35 +7,23 @@ identity fields (email, role) cannot be altered by the user.
 """
 from django.contrib.auth import get_user_model
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
+
+from tests.api.base import BaseApiTestCase, LOGIN_URL, ME_URL, PASSWORD
 
 User = get_user_model()
 
-LOGIN_URL = "/api/v1/auth/login/"
-ME_URL = "/api/v1/auth/me/"
 
-PASSWORD = "StrongPass123!"
-
-
-class ProfileApiTests(APITestCase):
+class ProfileApiTests(BaseApiTestCase):
     def setUp(self):
-        self.client = APIClient(HTTP_HOST="localhost")
-        self.user = User.objects.create_user(
+        super().setUp()
+        self.user = self.make_landlord(
             email="profile@example.com",
-            password=PASSWORD,
             full_name="Original Name",
             phone="08000000000",
-            role=User.Role.LANDLORD,
         )
 
     def _authenticate(self):
-        response = self.client.post(
-            LOGIN_URL,
-            {"email": "profile@example.com", "password": PASSWORD},
-            format="json",
-        )
-        access = response.data["data"]["access"]
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
+        self.auth_as(self.user)
 
     def _patch(self, payload):
         return self.client.patch(ME_URL, payload, format="json")
