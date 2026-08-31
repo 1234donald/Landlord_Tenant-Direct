@@ -555,12 +555,30 @@ Phase 2 (Authentication and User Management) is in progress.
     registration/login/logout and admin action flows (and that forbidden actions
     emit nothing). (535 total, no DB changes beyond the `apps.audit` migration).
 
+- **Sprint 6.6 (completed):** Full system integration — executed all major
+    user journeys end to end through the real HTTP API and presentation pages,
+    verifying that authentication, apartments, preferences, Weighted KNN
+    recommendations, messaging, verification, administration and audit
+    interoperate without bypassing role, data or security rules. Added
+    `tests/integration/test_full_system_integration.py` (6 tests) covering the
+    full tenant journey (register → search/filter → preference → generate
+    Weighted KNN recommendations → view apartment → message landlord →
+    conversation), the full landlord journey (register → verification
+    submission → admin approval → listing → receive/reply to message), the
+    administrator journey (login → review → approve/reject with remarks), and
+    cross-cutting integrity checks (tenant cannot run landlord/admin actions,
+    tenant preference/recommendation privacy, and recommendation hard filters
+    never surface an over-budget apartment — AGENTS 15). Phase 6 exit criteria
+    met: all modules function together with role, data and security rules
+    intact. Full regression suite green (unit, API, ML and integration);
+    `manage.py check` reports no issues. No schema changes; no new dependencies.
+
 Sprint 6.3 hardens the application configuration and adds a verification suite
 for the §27 security controls. Sprint 6.4 then hardens the REST API itself —
 consistent error envelopes, auth-endpoint throttling, collection pagination and
 JWT verification together complete Sprint 6.4. Sprint 6.5 adds the audit,
-logging and data-integrity foundation; the remaining Phase 6 work is
-Sprint 6.6 (full system integration).
+logging and data-integrity foundation, and Sprint 6.6 completes the Phase 6
+full-system integration across all modules.
 
 Sprint 5.4 completes the recommendation weighted-distance engine. A tenant
 query vector and each apartment candidate can now be compared by a weighted
