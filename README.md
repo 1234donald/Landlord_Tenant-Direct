@@ -47,7 +47,8 @@ landlord_tenant_project/
 ├── SYSTEM_REQUIREMENTS.md
 ├── TECH_STACK_AND_IMPLEMENTATION_PLAN.md
 ├── docs/
-│   └── usability_evaluation_questionnaire.md
+│   ├── usability_evaluation_questionnaire.md
+│   └── ml_evaluation_results.md
 ├── requirements.txt
 ├── config/
 │   ├── settings/
@@ -689,6 +690,30 @@ Phase 2 (Authentication and User Management) is in progress.
     usability/security regression green (`test_recommendation_page.py` 3 passed,
     `test_security_hardening.py` 24 passed); `manage.py check` reports no issues
     and no schema changes are required.
+
+- **Sprint 7.6 (completed):** Weighted KNN evaluation — delivered the "ML
+    evaluation results for Chapter Four" deliverable (SYSTEM_REQUIREMENTS §41,
+    §31) in a new automated suite, `tests/ml/test_weighted_knn_evaluation.py`
+    (10 tests), plus a documented results report,
+    `docs/ml_evaluation_results.md`. The suite runs the real engine
+    (`ml/ranking`) against actual `Apartment` records and evaluates every
+    Sprint 7.6 category with measured, reproducible outcomes (all figures from
+    actual execution — AGENTS 28, 40): recommendation relevance/metrics
+    (Precision/Recall/Hit/NDCG = 1.0 on the controlled catalogue scenario, and
+    an honest Precision@3 = 0.667 once a non-relevant flat enters the top set —
+    proving metrics are never inflated); ranking correctness (ascending
+    distance, consecutive 1-based ranks, consistent `similarity = exp(-distance)`,
+    reproducible); K behaviour (default K=5 respected; K=3 returns the top-3
+    prefix; graceful degradation below K); weighting behaviour (a reproduced
+    rank-flip — boosting `parking` weight while lowering `bedrooms` flips which
+    candidate ranks first, confirming weights directionally drive ranking);
+    response time (engine measured at **0.0153s** over a 30-candidate set, well
+    below the ~2s target); and controlled preference scenarios (facility and
+    price-cap hard constraints behave correctly, AGENTS 15). New suite green
+    (10 passed); ML regression green (`tests/ml/`,
+    `test_weighted_distance.py`, `test_recommendation_service.py`:
+    66 passed); `manage.py check` reports no issues and no schema changes are
+    required.
 
 Sprint 6.3 hardens the application configuration and adds a verification suite
 for the §27 security controls. Sprint 6.4 then hardens the REST API itself —
