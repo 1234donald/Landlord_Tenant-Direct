@@ -46,6 +46,8 @@ landlord_tenant_project/
 ├── AGENTS.md
 ├── SYSTEM_REQUIREMENTS.md
 ├── TECH_STACK_AND_IMPLEMENTATION_PLAN.md
+├── docs/
+│   └── usability_evaluation_questionnaire.md
 ├── requirements.txt
 ├── config/
 │   ├── settings/
@@ -655,9 +657,38 @@ Phase 2 (Authentication and User Management) is in progress.
     recommendation generation in **0.044s**, both well below the ~2s NFR target
     (results are measured, never fabricated — AGENTS 28, 41, 47). New suite
     green (6 passed); security/permission regression green
-    (`test_security_hardening.py` 12 passed, `test_api_security.py` 18 passed,
+    (    `test_security_hardening.py` 12 passed, `test_api_security.py` 18 passed,
     `test_permissions.py` 13 passed); `manage.py check` reports no issues and no
     schema changes are required.
+
+- **Sprint 7.5 (completed):** User acceptance and usability evaluation —
+    delivered the Phase 7.5 "user-acceptance/usability evidence"
+    (SYSTEM_REQUIREMENTS §41, §29.3) in two honest, non-fabricated parts
+    (AGENTS 39, 40 — real measured outcomes only, no invented participants).
+    (1) An automated live-system suite, `tests/integration/test_usability_evaluation.py`
+    (16 tests), maps each Sprint 7.5 target to a measurable outcome against the
+    running application: registration (clear "Registration successful." feedback
+    and an understandable "Registration failed." message with per-field errors);
+    navigation (role-based navbar — landlord sees "My Apartments", tenant sees
+    "Recommendations", admin sees the "Admin" menu — and every internal link on
+    the public pages resolves with no broken links); apartment search (the full
+    sentence of filters renders and a filtered search returns the correct,
+    clearly displayed result); apartment information (the detail page shows
+    title, price, location, type, bedrooms, bathrooms, facilities, description
+    and landlord contact); the recommendation interface (reachable, explains
+    Weighted KNN, shows ranked cards with rank + "Similarity score", and uses
+    only factual, non-guarantee language); messaging (clear success/error
+    feedback and successful tenant-to-landlord conversation creation); and
+    overall usability (every page shares one consistent base layout with a
+    responsive viewport, a single `<main>` landmark, accessible `<nav>` and a
+    page heading). (2) A human-administered acceptance instrument,
+    `docs/usability_evaluation_questionnaire.md`, is provided for a real
+    reviewer to complete after actually using the application (registration,
+    navigation, search, apartment info, recommendations, messaging, overall
+    usability and a summary/acceptance decision). New suite green (16 passed);
+    usability/security regression green (`test_recommendation_page.py` 3 passed,
+    `test_security_hardening.py` 24 passed); `manage.py check` reports no issues
+    and no schema changes are required.
 
 Sprint 6.3 hardens the application configuration and adds a verification suite
 for the §27 security controls. Sprint 6.4 then hardens the REST API itself —
