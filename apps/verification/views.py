@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsAdmin, IsLandlord
+from apps.core.api import paginated_payload
 
 from .models import VerificationRequest
 from .serializers import (
@@ -101,13 +102,13 @@ class AdminVerificationListView(generics.ListAPIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
         queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
         return Response(
-            {
-                "success": True,
-                "message": "Verification requests retrieved.",
-                "data": serializer.data,
-            },
+            paginated_payload(
+                request,
+                queryset,
+                self.get_serializer_class(),
+                message="Verification requests retrieved.",
+            ),
             status=status.HTTP_200_OK,
         )
 

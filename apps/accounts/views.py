@@ -2,12 +2,15 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import (
     TokenBlacklistSerializer,
     TokenRefreshSerializer,
 )
+
+from apps.core.api import paginated_payload
 
 from .permissions import IsAdmin, IsLandlord, IsOwnerOrAdmin, IsTenant
 from .serializers import LoginSerializer, ProfileSerializer, RegisterSerializer
@@ -24,6 +27,9 @@ class RegisterView(APIView):
     # Unlike the JWT-protected API, registration is a public action.
     authentication_classes = []
     permission_classes = []
+    # Public endpoint; rate-limit it to deter automated abuse (Sprint 6.4).
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -56,6 +62,8 @@ class LoginView(APIView):
 
     authentication_classes = []
     permission_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -93,6 +101,8 @@ class RefreshView(APIView):
 
     authentication_classes = []
     permission_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = TokenRefreshSerializer(data=request.data)
@@ -272,13 +282,14 @@ class UserListView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
+        serializer_class = self.get_serializer_class()
         return Response(
-            {
-                "success": True,
-                "message": "Users retrieved.",
-                "data": serializer.data,
-            },
+            paginated_payload(
+                request,
+                queryset,
+                serializer_class,
+                message="Users retrieved.",
+            ),
             status=status.HTTP_200_OK,
         )
 

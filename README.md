@@ -503,12 +503,38 @@ Phase 2 (Authentication and User Management) is in progress.
     validators, secrets management (no hardcoded key, `.env`/keys gitignored),
     non-leaking 404/500 pages, role enforcement and the media/upload root
     separation (479 total); no database changes.
+- **Sprint 6.4 (completed):** API security and validation — hardened the REST
+    API and made its behaviour consistent across every endpoint. Added a custom
+    DRF exception handler (`apps/core/api.py::api_exception_handler`, wired via
+    `REST_FRAMEWORK["EXCEPTION_HANDLER"]`) that wraps every escaping DRF error —
+    401 authentication, 403 permission, 404 not-found, 405 method-not-allowed,
+    400 validation/parse, and 429 throttling — into the same
+    `success/message/errors` envelope the hand-written views already use, so
+    error responses are uniform and never leak stack traces. The unhandled-error
+    path still returns `None` for Django to log without exposing internals.
+    Added scoped rate limiting (`ScopedRateThrottle`, scope `auth`) on the
+    public authentication endpoints (register/login/refresh) — the natural
+    brute-force targets — configured via `DEFAULT_THROTTLE_RATES` and applied
+    only there so legitimate flows elsewhere are unaffected. Added a shared
+    non-breaking page-based paginator (`paginated_payload`) to the collection
+    endpoints (messages, conversations, preferences, recommendations, users and
+    the admin verification list), each now returning `count`, `page`, `pages`,
+    `next` and `previous` metadata alongside `data` (page size 12, matching the
+    existing apartment-search envelope; empty/small datasets still fit on
+    page 1 so existing consumers of flat `data` are unaffected, and out-of-range
+    pages clamp to the last real page). JWT protections were reviewed: short
+    access lifetime, longer refresh, and blacklist-on-logout all verified.
+    `tests/api/test_api_security.py` (18 tests) verifies the consistent error
+    envelope (401/403/404/405/400/429), the throttle behaviour (including a
+    429 with `retry_after`), pagination metadata, out-of-range page clamping and
+    JWT protections (expired access token rejected). (497 total); no database
+    changes.
 
 Sprint 6.3 hardens the application configuration and adds a verification suite
-for the §27 security controls. This completes Sprint 6.3; the remaining Phase 6
-work is Sprint 6.4 (API security and validation — serializer validation,
-throttling, pagination, consistent API errors) and Sprint 6.5 (audit, logging
-and data integrity).
+for the §27 security controls. Sprint 6.4 then hardens the REST API itself —
+consistent error envelopes, auth-endpoint throttling, collection pagination and
+JWT verification together complete Sprint 6.4; the remaining Phase 6 work is
+Sprint 6.5 (audit, logging and data integrity).
 
 Sprint 5.4 completes the recommendation weighted-distance engine. A tenant
 query vector and each apartment candidate can now be compared by a weighted

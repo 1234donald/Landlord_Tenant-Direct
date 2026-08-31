@@ -167,6 +167,14 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Consistent error envelope across the whole API (Sprint 6.4).
+    "EXCEPTION_HANDLER": "apps.core.api.api_exception_handler",
+    # Scoped rate limiting for the public authentication endpoints, which are
+    # the natural brute-force targets. Other endpoints are not globally limited
+    # so legitimate multi-request flows are unaffected (AGENTS 27, §24).
+    "DEFAULT_THROTTLE_RATES": {
+        "auth": "60/min",
+    },
 }
 
 # JWT lives a short time for access; the refresh token can be exchanged for a

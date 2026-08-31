@@ -24,6 +24,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsTenant
+from apps.core.api import paginated_payload
 
 from .models import Preference, Recommendation
 from .permissions import (
@@ -50,13 +51,13 @@ class PreferenceListCreateView(APIView):
 
     def get(self, request):
         queryset = Preference.objects.filter(tenant=request.user)
-        serializer = PreferenceSerializer(queryset, many=True)
         return Response(
-            {
-                "success": True,
-                "message": "Preferences retrieved.",
-                "data": serializer.data,
-            },
+            paginated_payload(
+                request,
+                queryset,
+                PreferenceSerializer,
+                message="Preferences retrieved.",
+            ),
             status=status.HTTP_200_OK,
         )
 
@@ -217,11 +218,12 @@ class RecommendationListView(_RecommendationResultsMixin, APIView):
             tenant=request.user
         ).prefetch_related("items__apartment__images")
         return Response(
-            {
-                "success": True,
-                "message": "Recommendations retrieved.",
-                "data": RecommendationSerializer(queryset, many=True).data,
-            },
+            paginated_payload(
+                request,
+                queryset,
+                RecommendationSerializer,
+                message="Recommendations retrieved.",
+            ),
             status=status.HTTP_200_OK,
         )
 

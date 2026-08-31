@@ -21,6 +21,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.api import paginated_payload
+
 from .models import Conversation, Message
 from .permissions import (
     IsConversationParticipantOrAdmin,
@@ -56,13 +58,13 @@ class MessageListCreateView(APIView):
         queryset = queryset.select_related(
             "conversation", "sender", "recipient"
         ).order_by("-created_at", "-id")
-        serializer = MessageSerializer(queryset, many=True)
         return Response(
-            {
-                "success": True,
-                "message": "Messages retrieved.",
-                "data": serializer.data,
-            },
+            paginated_payload(
+                request,
+                queryset,
+                MessageSerializer,
+                message="Messages retrieved.",
+            ),
             status=status.HTTP_200_OK,
         )
 
@@ -141,13 +143,13 @@ class ConversationListCreateView(APIView):
                 tenant=request.user,
             ) | Conversation.objects.filter(landlord=request.user)
         queryset = queryset.prefetch_related("messages").order_by("-updated_at")
-        serializer = ConversationSummarySerializer(queryset, many=True)
         return Response(
-            {
-                "success": True,
-                "message": "Conversations retrieved.",
-                "data": serializer.data,
-            },
+            paginated_payload(
+                request,
+                queryset,
+                ConversationSummarySerializer,
+                message="Conversations retrieved.",
+            ),
             status=status.HTTP_200_OK,
         )
 
