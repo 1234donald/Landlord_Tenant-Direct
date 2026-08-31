@@ -631,10 +631,33 @@ Phase 2 (Authentication and User Management) is in progress.
     journeys and drives the administrator console pages end to end. All
     asserted counts are read from the real database/HTTP responses (no
     fabricated results — AGENTS 39, 40). New suite green (3 passed); relevant
-    integration regression green (`test_full_system_integration.py`,
+     integration regression green (`test_full_system_integration.py`,
     `test_tenant_journey.py`, `test_admin_dashboard.py`,
     `test_admin_workflows.py`: 39 passed + 32 subtests); `manage.py check`
     reports no issues and no schema changes are required.
+
+- **Sprint 7.4 (completed):** Security and performance testing — delivered the
+    Phase 7.4 "security and performance results" (SYSTEM_REQUIREMENTS §41) in a
+    dedicated suite, `tests/integration/test_security_performance.py` (6 tests,
+    +3 subtests). Earlier security work (Sprints 6.3/6.4 and the API suites)
+    already covers unauthorised access, input validation, authentication,
+    permissions and file uploads; this sprint deliberately adds only the genuine
+    gaps that remain. Security: stored and reflected XSS mitigation is verified
+    through Django's template auto-escaping — an apartment title containing a
+    `<script>` payload is rendered escaped (`&lt;script&gt;`) on both the browse
+    and detail pages and never executes, and a crafted location echoed back into
+    the search form is escaped. SQL-injection-safety is verified against
+    boolean-tautology and comment payloads (`Calabar' OR '1'='1`,
+    `' OR 1=1 --`): ORM-parameterised search returns zero false matches and
+    never leaks rows. Performance (§29.1): real response times were measured
+    with `time.perf_counter` on actual requests — a normal filtered
+    apartment-list API request returned in **0.218s** and separate
+    recommendation generation in **0.044s**, both well below the ~2s NFR target
+    (results are measured, never fabricated — AGENTS 28, 41, 47). New suite
+    green (6 passed); security/permission regression green
+    (`test_security_hardening.py` 12 passed, `test_api_security.py` 18 passed,
+    `test_permissions.py` 13 passed); `manage.py check` reports no issues and no
+    schema changes are required.
 
 Sprint 6.3 hardens the application configuration and adds a verification suite
 for the §27 security controls. Sprint 6.4 then hardens the REST API itself —
