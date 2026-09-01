@@ -25,7 +25,7 @@ CONVERSATIONS_URL = "/api/v1/conversations/"
 VERIFICATION_SUBMIT_URL = "/api/v1/verification/submit/"
 VERIFICATION_STATUS_URL = "/api/v1/verification/status/"
 ADMIN_VERIFICATIONS_URL = "/api/v1/admin/verifications/"
-USERS_URL = "/api/v1/accounts/users/"
+USERS_URL = "/api/v1/users/"
 
 
 class BaseApiTestCase(APITestCase):

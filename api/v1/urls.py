@@ -56,6 +56,14 @@ urlpatterns = [
         LandlordAreaView.as_view(),
         name="accounts-landlord",
     ),
+    # Canonical users endpoints (AGENTS 21: /api/v1/users/).
+    path("users/", UserListView.as_view(), name="users"),
+    path(
+        "users/<int:pk>/",
+        UserDetailView.as_view(),
+        name="user-detail",
+    ),
+    # Backward-compatible aliases (Sprint 2.5 route) to the same views.
     path("accounts/users/", UserListView.as_view(), name="accounts-users"),
     path(
         "accounts/users/<int:pk>/",

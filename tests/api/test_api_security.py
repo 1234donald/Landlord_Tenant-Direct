@@ -27,7 +27,7 @@ User = get_user_model()
 
 LOGIN_URL = "/api/v1/auth/login/"
 ME_URL = "/api/v1/auth/me/"
-USERS_URL = "/api/v1/accounts/users/"
+USERS_URL = "/api/v1/users/"
 MESSAGES_URL = "/api/v1/messages/"
 MESSAGE_DETAIL_URL = "/api/v1/messages/999999/"
 CONVERSATIONS_URL = "/api/v1/conversations/"

@@ -200,10 +200,8 @@ Derived from AGENTS.md §8 and Specification §22:
 
 | Entity | Key Fields | Notes |
 |--------|-----------|-------|
-| `users` | full name, email (unique), phone, password, role, timestamps | Custom User model; role = TENANT/LANDLORD/ADMIN |
-| `landlords` | FKs to user, verification info, status, timestamps | Split per spec model relationships |
-| `tenants` | FK to user, timestamps | |
-| `tenant_preferences` | FK tenant, preferred location, max price, type, bedrooms, bathrooms, parking, electricity, water, security, furnished, facilities, timestamps | For Weighted KNN query vector |
+| `users` | full name, email (unique), phone, password, role, timestamps | Custom User model; role = TENANT/LANDLORD/ADMIN. The role field (plus the profile fields) represents the "Tenant Profile" / "Landlord Profile"; there is no separate profile table. |
+| `tenant_preferences` | FK tenant (→ users), preferred location, max price, type, bedrooms, bathrooms, parking, electricity, water, security, furnished, facilities, timestamps | For Weighted KNN query vector |
 | `apartments` | FK landlord, title, description, location, area/address, rental price, type, bedrooms, bathrooms, parking, electricity, water, security, furnished, availability, timestamps | Validation: price positive numeric, counts numeric |
 | `apartment_images` | FK apartment, image file, order, uploaded timestamp | Validated uploads |
 | `recommendations` | FK tenant, FK apartment, distance, rank, k, algorithm, generated timestamp | Store results per spec §14 |
@@ -212,13 +210,12 @@ Derived from AGENTS.md §8 and Specification §22:
 | `landlord_verifications` | FK landlord, info submitted, status (pending/approved/rejected), reviewed-by admin, timestamps | |
 
 ### H.2 Relationships
-- User → Tenant (1:1), User → Landlord (1:1)
-- Tenant → TenantPreference (1:N)
-- Landlord → Apartment (1:N)
+- User (role = TENANT) → TenantPreference (1:N); `Preference.tenant` FK → `users`
+- User (role = LANDLORD) → Apartment (1:N); `Apartment.landlord` FK → `users`
 - Apartment → ApartmentImage (1:N)
-- Tenant → Recommendation → Apartment
-- Tenant ↔ Landlord via Conversation/Message
-- Landlord → Verification ← Administrator
+- User[Tenant] → Recommendation → Apartment
+- User[Tenant] ↔ User[Landlord] via Conversation/Message
+- User[Landlord] → Verification ← User[Administrator]
 
 ### H.3 Constraints & Practices
 - Primary keys, foreign keys, unique constraints (email), indexes on search fields (location, price, type), timestamps (created/updated).

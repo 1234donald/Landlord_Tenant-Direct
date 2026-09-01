@@ -16,7 +16,7 @@ User = get_user_model()
 LOGIN_URL = "/api/v1/auth/login/"
 TENANT_URL = "/api/v1/accounts/tenant/"
 LANDLORD_URL = "/api/v1/accounts/landlord/"
-USERS_URL = "/api/v1/accounts/users/"
+USERS_URL = "/api/v1/users/"
 
 PASSWORD = "StrongPass123!"
 
@@ -105,6 +105,22 @@ class PermissionApiTests(APITestCase):
         emails = {u["email"] for u in response.data["data"]}
         self.assertIn("tenant@example.com", emails)
         self.assertIn("landlord@example.com", emails)
+
+    def test_canonical_users_endpoint_is_api_v1_users(self):
+        # The canonical users collection endpoint is /api/v1/users/ (AGENTS 21).
+        self._auth_as(self.admin)
+        response = self.client.get("/api/v1/users/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        emails = {u["email"] for u in response.data["data"]}
+        self.assertIn("tenant@example.com", emails)
+
+    def test_legacy_users_alias_remains_available(self):
+        # Backward-compatible alias /api/v1/accounts/users/ still resolves.
+        self._auth_as(self.admin)
+        response = self.client.get("/api/v1/accounts/users/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        emails = {u["email"] for u in response.data["data"]}
+        self.assertIn("tenant@example.com", emails)
 
     def test_owner_can_view_own_profile_via_detail(self):
         self._auth_as(self.tenant)

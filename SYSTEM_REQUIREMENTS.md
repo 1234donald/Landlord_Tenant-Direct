@@ -724,9 +724,11 @@ landlord_tenant_db
 
 Primary entities:
 
-- User;
-- Tenant Profile;
-- Landlord Profile;
+- User (single custom model carrying the role field TENANT / LANDLORD / ADMIN
+  and the profile fields full_name and phone; there is no separate "Tenant
+  Profile" or "Landlord Profile" table — each role's profile is represented by
+  the User record itself via the role field, and exposed through a
+  ProfileSerializer);
 - Apartment;
 - Apartment Image;
 - Tenant Preference;
@@ -739,25 +741,26 @@ Primary entities:
 
 # 26. DATABASE RELATIONSHIPS
 
+A single custom `User` model represents every principal; its `role` field
+distinguishes TENANT, LANDLORD and ADMIN. "Tenant" and "Landlord" are therefore
+roles on the `User` entity rather than separate tables, and the preference /
+listing relationships point at `User` (filtered by role):
+
 ```text
-User
+User (role = TENANT | LANDLORD | ADMIN)
  │
- ├── Tenant Profile
- │      │
- │      └── Tenant Preference
+ ├── [as Tenant] ─── Tenant Preference     (Preference.tenant  FK → User)
  │
- └── Landlord Profile
-        │
-        └── Apartment
-              │
-              └── Apartment Image
+ └── [as Landlord] ─── Apartment           (Apartment.landlord FK → User)
+                          │
+                          └── Apartment Image
 
 
-Tenant ─── Recommendation ─── Apartment
+User[Tenant] ─── Recommendation ─── Apartment
 
 User ─── Conversation/Message ─── User
 
-Landlord ─── Verification ─── Administrator
+User[Landlord] ─── Verification ─── User[Administrator]
 ```
 
 Foreign-key relationships and referential integrity shall be enforced through Django models and PostgreSQL.
