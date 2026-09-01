@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Messages - Landlord-Tenant Direct Connect{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4"><i class="bi bi-chat-dots me-2"></i>Messages</h1>
+
+{% if conversations %}
+<div class="list-group shadow-sm">
+    {% for conversation in conversations %}
+    <a href="{% url 'conversation-detail' conversation.pk %}"
+       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        <div>
+            <strong>
+                {% if user.is_tenant %}{{ conversation.landlord.get_full_name|default:conversation.landlord.email }}
+                {% else %}{{ conversation.tenant.get_full_name|default:conversation.tenant.email }}{% endif %}
+            </strong>
+            <div class="small text-muted">
+                {% with last=conversation.messages.last %}
+                {% if last %}{{ last.body|truncatechars:60 }} &middot; {{ last.created_at|timesince }} ago{% else %}No messages yet{% endif %}
+                {% endwith %}
+            </div>
+        </div>
+        {% with unread=conversation.messages %}
+        <span class="badge text-bg-primary">{{ unread|length }} message{{ unread|length|pluralize }}</span>
+        {% endwith %}
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info empty-state">
+    <i class="bi bi-inbox me-1"></i>
+    {% if user.is_tenant %}
+    No conversations yet. Browse apartments and contact a landlord to get started.
+    {% else %}
+    No conversations yet. Tenants who contact you will appear here.
+    {% endif %}
+</div>
+{% if user.is_tenant %}
+<a href="{% url 'apartment-list' %}" class="btn btn-primary">Browse apartments</a>
+{% endif %}
+{% endif %}
+{% endblock %}

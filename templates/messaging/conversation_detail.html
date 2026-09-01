@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Conversation with {{ other.get_full_name|default:other.email }} - Landlord-Tenant Direct Connect{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">
+        <i class="bi bi-chat-dots me-2"></i>{{ other.get_full_name|default:other.email }}
+    </h1>
+    <a href="{% if user.is_tenant %}{% url 'tenant-messages' %}{% else %}{% url 'landlord-messages' %}{% endif %}" class="btn btn-outline-primary btn-sm">Back to messages</a>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body p-3" style="max-height: 60vh; overflow-y: auto;">
+        {% if thread %}
+        {% for message in thread %}
+        <div class="d-flex {% if message.sender_id == user.id %}justify-content-end{% else %}justify-content-start{% endif %} mb-2">
+            <div class="col-auto {% if message.sender_id == user.id %}conv-mine{% else %}conv-theirs{% endif %} rounded p-2 small shadow-sm">
+                {{ message.body|linebreaksbr }}
+                <div class="d-flex justify-content-end text-opacity-75 mt-1">
+                    <small class="text-muted">{{ message.created_at|date:"j M H:i" }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-muted empty-state mb-0">No messages in this conversation yet. Start the conversation below.</p>
+        {% endif %}
+    </div>
+</div>
+
+<form method="post" action="{% url 'conversation-detail' conversation.pk %}" class="row g-2">
+    {% csrf_token %}
+    <div class="col-10">
+        <label for="body" class="visually-hidden">Message</label>
+        <textarea id="body" name="body" class="form-control" rows="2" required
+                  placeholder="Write a message to {{ other.get_full_name|default:other.email }}..."></textarea>
+    </div>
+    <div class="col-2">
+        <button type="submit" class="btn btn-primary w-100 h-100">
+            <i class="bi bi-send"></i><span class="d-none d-md-inline ms-1">Send</span>
+        </button>
+    </div>
+</form>
+{% endblock %}

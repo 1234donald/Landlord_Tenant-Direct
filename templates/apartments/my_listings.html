@@ -5,6 +5,14 @@
     {% if is_admin_view %}All Apartments{% else %}My Apartments{% endif %}
 </h1>
 
+{% if not is_admin_view %}
+<div class="mb-4">
+    <a href="{% url 'apartment-create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>New listing
+    </a>
+</div>
+{% endif %}
+
 {% if apartments %}
 <div class="row g-4">
     {% for apartment in apartments %}
@@ -30,7 +38,14 @@
                 <div class="small text-muted mb-3">
                     {{ apartment.images.count }} photo{{ apartment.images.count|pluralize }} &middot; Listed {{ apartment.created_at|date:"M d, Y" }}
                 </div>
-                <a href="{% url 'apartment-detail' apartment.pk %}" class="btn btn-outline-primary btn-sm">View</a>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'apartment-detail' apartment.pk %}" class="btn btn-outline-primary btn-sm">View</a>
+                    {% if not is_admin_view %}
+                    <a href="{% url 'apartment-edit' apartment.pk %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-pencil-square me-1"></i>Edit
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -38,7 +53,7 @@
 </div>
 {% else %}
 <div class="alert alert-info">
-    {% if is_admin_view %}No apartments have been created yet.{% else %}You have not created any apartment listings yet.{% endif %}
+    {% if is_admin_view %}No apartments have been created yet.{% else %}You have not created any apartment listings yet. <a href="{% url 'apartment-create' %}">Create your first listing</a>.{% endif %}
 </div>
 {% endif %}
 {% endblock %}

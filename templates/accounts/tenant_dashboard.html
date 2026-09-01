@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Tenant dashboard - Landlord-Tenant Direct Connect{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4">
+    <i class="bi bi-speedometer2 me-2"></i>Tenant dashboard
+</h1>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <h2 class="h6 text-muted">Conversations</h2>
+                <p class="fs-3 mb-0">{{ conversation_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <h2 class="h6 text-muted">Unread messages</h2>
+                <p class="fs-3 mb-0">{{ unread_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <h2 class="h6 text-muted">Preferences saved</h2>
+                <p class="fs-3 mb-0">{% if has_preference %}Yes{% else %}No{% endif %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5"><i class="bi bi-search me-2"></i>Find an apartment</h2>
+                <p class="text-muted small">
+                    Browse and filter available listings across the platform.
+                </p>
+                <a href="{{ browse_url }}" class="btn btn-primary">Browse apartments</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5"><i class="bi bi-sliders me-2"></i>Your preferences</h2>
+                {% if has_preference %}
+                <p class="text-muted small">
+                    {% if latest_preference.location %}Location: {{ latest_preference.location }}<br>{% endif %}
+                    {% if latest_preference.max_rent %}Max rent: &#8358;{{ latest_preference.max_rent }}<br>{% endif %}
+                    {% if latest_preference.bedrooms %}Bedrooms: {{ latest_preference.bedrooms }}{% endif %}
+                </p>
+                <a href="{% url 'edit-preference' %}" class="btn btn-outline-primary btn-sm">Update preferences</a>
+                {% else %}
+                <p class="text-muted small">
+                    Save your apartment preferences to receive personalised
+                    recommendations.
+                </p>
+                <a href="{% url 'edit-preference' %}" class="btn btn-primary">Set preferences</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5"><i class="bi bi-stars me-2"></i>Recommendations</h2>
+                {% if has_recommendations %}
+                <p class="text-muted small">
+                    Your latest Weighted KNN run recommends
+                    {{ recommendation.items.count }} apartments.
+                </p>
+                <a href="{% url 'recent-recommendations' %}" class="btn btn-outline-primary btn-sm">View recommendations</a>
+                {% else %}
+                <p class="text-muted small">
+                    No recommendation run yet. Set your preferences to begin.
+                </p>
+                <a href="{% url 'edit-preference' %}" class="btn btn-outline-primary btn-sm">Get started</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="h5 mb-0"><i class="bi bi-chat-dots me-2"></i>Messages</h2>
+            <a href="{% url 'tenant-messages' %}" class="btn btn-outline-primary btn-sm">Go to messages</a>
+        </div>
+        <p class="text-muted small mb-0 mt-2">
+            {% if conversation_count %}You have {{ conversation_count }} conversation(s) and {{ unread_count }} unread message(s).{% else %}No conversations yet. Browse apartments and contact a landlord to start one.{% endif %}
+        </p>
+    </div>
+</div>
+{% endblock %}

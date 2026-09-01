@@ -120,6 +120,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # ---------------------------------------------------------------------------
 AUTH_USER_MODEL = "accounts.User"
 
+# Session-based presentation authentication (AGENTS 19). Pages that require a
+# login redirect here; successful logins land on the role dashboard.
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+
 # ---------------------------------------------------------------------------
 # Password validation
 # ---------------------------------------------------------------------------

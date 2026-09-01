@@ -22,39 +22,81 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'about' %}">About</a>
+                        <a class="nav-link{% if request.resolver_match.url_name == 'home' %} active" aria-current="page{% endif %}" href="{% url 'home' %}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'apartment-list' %}">Apartments</a>
+                        <a class="nav-link{% if request.resolver_match.url_name == 'about' %} active" aria-current="page{% endif %}" href="{% url 'about' %}">About</a>
                     </li>
-                    {% if user.is_authenticated and user.is_landlord %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'my-apartments' %}">My Apartments</a>
+                        <a class="nav-link{% if request.resolver_match.url_name == 'apartment-list' %} active" aria-current="page{% endif %}" href="{% url 'apartment-list' %}">Apartments</a>
                     </li>
-                    {% endif %}
-                    {% if user.is_authenticated and user.is_tenant %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'recommendation-results' %}">Recommendations</a>
-                    </li>
-                    {% endif %}
-                    {% if user.is_authenticated and user.is_admin %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#"
-                           data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a></li>
-                            <li><a class="dropdown-item" href="{% url 'admin_dashboard:users' %}">Users</a></li>
-                            <li><a class="dropdown-item" href="{% url 'admin_dashboard:landlords' %}">Landlords</a></li>
-                            <li><a class="dropdown-item" href="{% url 'admin_dashboard:apartments' %}">Apartments</a></li>
-                            <li><a class="dropdown-item" href="{% url 'admin_dashboard:verifications' %}">Verifications</a></li>
-                            <li><a class="dropdown-item" href="{% url 'admin_dashboard:reports' %}">Reports</a></li>
-                        </ul>
-                    </li>
+                    {% if user.is_authenticated %}
+                        {% if user.is_tenant %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'tenant-dashboard' %}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'recent-recommendations' %}">Recommendations</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'tenant-messages' %}">Messages</a>
+                        </li>
+                        {% endif %}
+                        {% if user.is_landlord %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'landlord-dashboard' %}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'my-apartments' %}">My Apartments</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'landlord-messages' %}">Messages</a>
+                        </li>
+                        {% endif %}
+                        {% if user.is_admin %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#"
+                               data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{% url 'admin_dashboard:users' %}">Users</a></li>
+                                <li><a class="dropdown-item" href="{% url 'admin_dashboard:landlords' %}">Landlords</a></li>
+                                <li><a class="dropdown-item" href="{% url 'admin_dashboard:apartments' %}">Apartments</a></li>
+                                <li><a class="dropdown-item" href="{% url 'admin_dashboard:verifications' %}">Verifications</a></li>
+                                <li><a class="dropdown-item" href="{% url 'admin_dashboard:reports' %}">Reports</a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle me-1"></i>{{ user.get_full_name|default:user.email|truncatechars:20 }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% if user.is_tenant %}
+                                <li><a class="dropdown-item" href="{% url 'tenant-profile' %}">My Profile</a></li>
+                                {% endif %}
+                                {% if user.is_landlord %}
+                                <li><a class="dropdown-item" href="{% url 'landlord-profile' %}">My Profile</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">Log out</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link{% if request.resolver_match.url_name == 'login' %} active" aria-current="page{% endif %}" href="{% url 'login' %}">Log in</a>
+                        </li>
+                        <li class="nav-item ms-lg-2">
+                            <a class="btn btn-outline-light btn-sm" href="{% url 'register' %}">Sign up</a>
+                        </li>
                     {% endif %}
                     {% block nav_extra %}{% endblock %}
                 </ul>

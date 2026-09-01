@@ -43,3 +43,55 @@ main {
   max-height: 420px;
   object-fit: cover;
 }
+
+/* Auth pages (Phase 5, Sprint 5.1) */
+.auth-shell {
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.auth-heading {
+  color: var(--lt-primary-dark);
+}
+
+/* Card uniformity */
+.card {
+  border: 1px solid #dee2e6;
+}
+
+.stat-card {
+  border-left: 4px solid var(--lt-primary);
+}
+
+/* Hero / landing */
+.hero {
+  background: linear-gradient(135deg, var(--lt-primary-dark), var(--lt-primary));
+  color: #fff;
+}
+
+.hero .btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Message bubbles */
+.conv-mine {
+  background-color: var(--lt-primary);
+  color: #fff;
+  border-bottom-right-radius: 0.25rem;
+}
+
+.conv-theirs {
+  background-color: #e9ecef;
+  border-bottom-left-radius: 0.25rem;
+}
+
+/* Empty states */
+.empty-state {
+  color: #6c757d;
+}
+
+/* Accessibility: focus visibility */
+:focus-visible {
+  outline: 3px solid var(--lt-primary);
+  outline-offset: 2px;
+}

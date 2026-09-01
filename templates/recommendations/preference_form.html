@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}My preferences - Landlord-Tenant Direct Connect{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="h3 mb-1">My apartment preferences</h1>
+        <p class="text-muted mb-4">
+            Tell us what you are looking for. Your preferences are used by the
+            Weighted KNN recommender to rank available apartments for you.
+        </p>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+
+        <form method="post" novalidate class="card shadow-sm">
+            {% csrf_token %}
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.location.id_for_label }}">{{ form.location.label }}</label>
+                        {{ form.location }}
+                        {% if form.location.errors %}<div class="invalid-feedback d-block">{% for e in form.location.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.max_rent.id_for_label }}">{{ form.max_rent.label }}</label>
+                        <div class="input-group">
+                            <span class="input-group-text">&#8358;</span>
+                            {{ form.max_rent }}
+                        </div>
+                        {% if form.max_rent.errors %}<div class="invalid-feedback d-block">{% for e in form.max_rent.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.apartment_type.id_for_label }}">{{ form.apartment_type.label }}</label>
+                        {{ form.apartment_type }}
+                        {% if form.apartment_type.errors %}<div class="invalid-feedback d-block">{% for e in form.apartment_type.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="{{ form.bedrooms.id_for_label }}">{{ form.bedrooms.label }}</label>
+                        {{ form.bedrooms }}
+                        {% if form.bedrooms.errors %}<div class="invalid-feedback d-block">{% for e in form.bedrooms.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="{{ form.bathrooms.id_for_label }}">{{ form.bathrooms.label }}</label>
+                        {{ form.bathrooms }}
+                        {% if form.bathrooms.errors %}<div class="invalid-feedback d-block">{% for e in form.bathrooms.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+
+                <fieldset class="mt-4">
+                    <legend class="h6">Required facilities (optional)</legend>
+                    <div class="text-muted small mb-2">Select the facilities your next home must have.</div>
+                    <div class="row g-2">
+                        {% for field in form %}
+                        {% if field.name in "parking electricity water security furnished" %}
+                        <div class="col-md-4">
+                            <div class="form-check form-switch">
+                                {{ field }}
+                                <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+                <div class="mt-4">
+                    <label class="form-label" for="{{ form.additional_facilities.id_for_label }}">{{ form.additional_facilities.label }}</label>
+                    {{ form.additional_facilities }}
+                    <div class="form-text">e.g. "Metered electricity", "Close to a market".</div>
+                    {% if form.additional_facilities.errors %}<div class="invalid-feedback d-block">{% for e in form.additional_facilities.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Save preferences</button>
+                    <a href="{% url 'recent-recommendations' %}" class="btn btn-outline-primary">View recommendations</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

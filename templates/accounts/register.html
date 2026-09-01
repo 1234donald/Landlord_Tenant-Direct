@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Create an account - Landlord-Tenant Direct Connect{% endblock %}
+
+{% block content %}
+<div class="auth-shell">
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <h1 class="h3 mb-1 auth-heading">Create an account</h1>
+            <p class="text-muted mb-4">
+                Join as a tenant to search and compare apartments, or as a landlord to
+                list and manage your properties.
+            </p>
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}<div class="invalid-feedback d-block">{% for e in form.full_name.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<div class="invalid-feedback d-block">{% for e in form.email.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}<div class="invalid-feedback d-block">{% for e in form.phone.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.role.id_for_label }}">{{ form.role.label }}</label>
+                    {{ form.role }}
+                    {% if form.role.errors %}<div class="invalid-feedback d-block">{% for e in form.role.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}<div class="invalid-feedback d-block">{% for e in form.password.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}<div class="invalid-feedback d-block">{% for e in form.password2.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="form-text mb-3">
+                    Passwords must be at least 8 characters and not be too common or
+                    entirely numeric.
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Create account</button>
+            </form>
+
+            <hr class="my-4">
+            <p class="text-center mb-0">
+                Already registered? <a href="{% url 'login' %}">Log in</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

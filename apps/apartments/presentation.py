@@ -7,11 +7,110 @@ facilities, availability and landlord information, and a landlord-only page
 listing a landlord's own apartments. They are separate from the REST API views
 in ``apps.apartments.views``.
 """
+from django import forms
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views import View
 from django.views.generic import DetailView, ListView
 
-from .models import Apartment
+from .models import Apartment, ApartmentImage
+from .serializers import ApartmentImageRequestSerializer
 from .views import build_search_queryset
+
+
+class LandlordOnlyMixin:
+    """Restrict a view to authenticated LANDLORD users (AGENTS 8).
+
+    Administrators are also permitted so the console can manage listings, but
+    tenants and anonymous users are blocked with a 403.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        if not (user and user.is_authenticated):
+            return HttpResponseForbidden("Forbidden")
+        if not (user.is_landlord or user.is_admin):
+            return HttpResponseForbidden("Forbidden")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class ApartmentForm(forms.ModelForm):
+    """Create/update form mirroring the API ``_ApartmentBaseSerializer``.
+
+    Server-side validation is identical to the API: rental price must be
+    positive and bedroom/bathroom counts must be at least 1 (AGENTS 10, 23).
+    """
+
+    class Meta:
+        model = Apartment
+        fields = [
+            "title",
+            "description",
+            "location",
+            "address",
+            "rental_price",
+            "apartment_type",
+            "bedrooms",
+            "bathrooms",
+            "parking",
+            "electricity",
+            "water",
+            "security",
+            "furnished",
+            "additional_facilities",
+            "availability",
+        ]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(
+                attrs={"class": "form-control", "rows": 4}
+            ),
+            "location": forms.TextInput(attrs={"class": "form-control"}),
+            "address": forms.TextInput(attrs={"class": "form-control"}),
+            "rental_price": forms.NumberInput(attrs={"class": "form-control", "min": "0", "step": "0.01"}),
+            "apartment_type": forms.Select(attrs={"class": "form-select"}),
+            "bedrooms": forms.NumberInput(attrs={"class": "form-control", "min": "1"}),
+            "bathrooms": forms.NumberInput(attrs={"class": "form-control", "min": "1"}),
+            "additional_facilities": forms.TextInput(attrs={"class": "form-control"}),
+        }
+
+    def clean_rental_price(self):
+        value = self.cleaned_data["rental_price"]
+        if value is not None and value < 0:
+            raise forms.ValidationError("Rental price must be a positive number.")
+        return value
+
+    def clean_bedrooms(self):
+        value = self.cleaned_data["bedrooms"]
+        if value is not None and value <= 0:
+            raise forms.ValidationError("Bedroom count must be at least 1.")
+        return value
+
+    def clean_bathrooms(self):
+        value = self.cleaned_data["bathrooms"]
+        if value is not None and value <= 0:
+            raise forms.ValidationError("Bathroom count must be at least 1.")
+        return value
+
+
+def _store_images(apartment, files):
+    """Validate and attach uploaded images to an apartment (AGENTS 24).
+
+    Each image is validated for type, integrity and size and then stored as an
+    ``ApartmentImage`` row. Invalid files are skipped; a file that is not a
+    genuine image is never stored.
+    """
+    validator = ApartmentImageRequestSerializer()
+    for order, file_obj in enumerate(files):
+        try:
+            validator.validate_image_file(file_obj)
+        except forms.ValidationError:
+            continue
+        ApartmentImage.objects.create(
+            apartment=apartment, image=file_obj, order=order
+        )
 
 
 class ApartmentBrowseView(ListView):
@@ -105,3 +204,81 @@ class MyApartmentsView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["is_admin_view"] = self.request.user.is_admin
         return context
+
+
+class ApartmentCreateView(LoginRequiredMixin, LandlordOnlyMixin, View):
+    """Landlord-only page for creating a new apartment listing.
+
+    The current landlord is always the owner; ownership is never client
+    supplied (mirrors the API ``ApartmentCreateSerializer``).
+    """
+
+    template_name = "apartments/form.html"
+
+    def get(self, request):
+        form = ApartmentForm()
+        return render(request, self.template_name, {"form": form, "is_edit": False})
+
+    def post(self, request):
+        form = ApartmentForm(request.POST)
+        if form.is_valid():
+            apartment = form.save(commit=False)
+            apartment.landlord = request.user
+            apartment.full_clean()
+            apartment.save()
+            _store_images(apartment, request.FILES.getlist("images"))
+            messages.success(request, "Your apartment listing was created.")
+            return redirect("my-apartments")
+        return render(
+            request,
+            self.template_name,
+            {"form": form, "is_edit": False},
+            status=400,
+        )
+
+
+class ApartmentEditView(LoginRequiredMixin, LandlordOnlyMixin, View):
+    """Landlord-only page for editing one of the landlord's own listings.
+
+    Only the owning landlord (or an administrator) may edit a listing.
+    """
+
+    template_name = "apartments/form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        return response
+
+    def get_apartment(self, request, pk):
+        apartment = get_object_or_404(Apartment, pk=pk)
+        if not (request.user.is_admin or apartment.landlord_id == request.user.id):
+            # Only the owning landlord (or an administrator) may manage a
+            # listing; other authenticated users get a 403 (AGENTS 8).
+            from django.http import HttpResponseForbidden
+
+            raise HttpResponseForbidden("Forbidden")
+        return apartment
+
+    def get(self, request, pk):
+        apartment = self.get_apartment(request, pk)
+        form = ApartmentForm(instance=apartment)
+        return render(
+            request,
+            self.template_name,
+            {"form": form, "apartment": apartment, "is_edit": True},
+        )
+
+    def post(self, request, pk):
+        apartment = self.get_apartment(request, pk)
+        form = ApartmentForm(request.POST, instance=apartment)
+        if form.is_valid():
+            instance = form.save()
+            _store_images(instance, request.FILES.getlist("images"))
+            messages.success(request, "Your apartment listing was updated.")
+            return redirect("my-apartments")
+        return render(
+            request,
+            self.template_name,
+            {"form": form, "apartment": apartment, "is_edit": True},
+            status=400,
+        )

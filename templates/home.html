@@ -1,12 +1,71 @@
 {% extends "base.html" %}
+
 {% block title %}Home | Landlord-Tenant Direct Connect{% endblock %}
+
 {% block content %}
-<div class="px-4 py-5 my-4 text-center bg-white rounded-3 shadow-sm">
-    <h1 class="display-5 fw-bold">Direct Landlord-Tenant Contact</h1>
-    <p class="lead mx-auto" style="max-width: 700px;">
-        An online platform connecting prospective tenants with landlords, with
-        personalised apartment recommendations powered by Weighted K-Nearest
-        Neighbour (Weighted KNN).
+<section class="hero rounded-3 p-5 mb-4 text-center">
+    <h1 class="display-5 fw-bold mb-3">Direct Landlord–Tenant Contact</h1>
+    <p class="lead mx-auto mb-4" style="max-width: 720px;">
+        An online platform connecting prospective tenants directly with landlords.
+        Search available apartments, save your preferences and receive personalised
+        recommendations powered by Weighted K-Nearest Neighbour (Weighted KNN).
     </p>
-</div>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+        <a href="{% url 'apartment-list' %}" class="btn btn-light btn-lg">Browse apartments</a>
+        {% if not user.is_authenticated %}
+        <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg">Create an account</a>
+        {% elif user.is_tenant %}
+        <a href="{% url 'edit-preference' %}" class="btn btn-outline-light btn-lg">Set your preferences</a>
+        {% elif user.is_landlord %}
+        <a href="{% url 'apartment-create' %}" class="btn btn-outline-light btn-lg">List an apartment</a>
+        {% endif %}
+    </div>
+</section>
+
+<section class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-search display-6 text-primary"></i>
+                <h2 class="h5 mt-3">Search &amp; filter</h2>
+                <p class="text-muted mb-0">
+                    Browse available apartments by location, type, price, bedrooms,
+                    bathrooms and facilities.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-stars display-6 text-primary"></i>
+                <h2 class="h5 mt-3">Personalised recommendations</h2>
+                <p class="text-muted mb-0">
+                    Save your preferences and let the Weighted KNN recommender rank
+                    the closest matches for you.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-chat-dots display-6 text-primary"></i>
+                <h2 class="h5 mt-3">Contact landlords directly</h2>
+                <p class="text-muted mb-0">
+                    Message the owner of a listing you like without intermediaries.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="alert alert-light border shadow-sm">
+    <h2 class="h5"><i class="bi bi-shield-check me-2"></i>Landlord verification</h2>
+    <p class="mb-0 text-muted">
+        Landlords complete an administrative verification workflow before their
+        account is reviewed. This is a platform control and is not a legal
+        verification of property ownership.
+    </p>
+</section>
 {% endblock %}
