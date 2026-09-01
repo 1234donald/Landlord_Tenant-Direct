@@ -11,7 +11,7 @@
 </div>
 
 <div class="card shadow-sm mb-3">
-    <div class="card-body p-3" style="max-height: 60vh; overflow-y: auto;">
+    <div class="card-body p-3 thread-scroll">
         {% if thread %}
         {% for message in thread %}
         <div class="d-flex {% if message.sender_id == user.id %}justify-content-end{% else %}justify-content-start{% endif %} mb-2">
