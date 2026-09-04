@@ -1,0 +1,12 @@
+{# Empty state component #}
+{# Usage: {% include "components/empty_state.html" with icon="bi-house-door" title="No apartments found" description="Try adjusting your search filters." action_url="/apartments/" action_text="Browse all listings" %} #}
+<div class="empty-state-container rounded-3 border bg-white" role="status">
+    {% if icon %}<i class="bi {{ icon }} empty-icon" aria-hidden="true"></i>{% endif %}
+    {% if title %}<h3>{{ title }}</h3>{% endif %}
+    {% if description %}<p>{{ description }}</p>{% endif %}
+    {% if action_url %}
+    <a href="{{ action_url }}" class="btn btn-primary">
+        {% if action_icon %}<i class="bi {{ action_icon }} me-1"></i>{% endif %}{{ action_text|default:"Continue" }}
+    </a>
+    {% endif %}
+</div>

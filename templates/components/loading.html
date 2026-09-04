@@ -1,0 +1,8 @@
+{# Loading spinner component #}
+{# Usage: {% include "components/loading.html" with message="Loading apartments..." %} #}
+<div class="loading-overlay" role="status" aria-label="Loading">
+    <div class="loading-spinner" aria-hidden="true"></div>
+    {% if message %}
+    <p class="small text-muted mb-0">{{ message }}</p>
+    {% endif %}
+</div>

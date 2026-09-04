@@ -1,0 +1,12 @@
+{# Error alert component #}
+{# Usage: {% include "components/error_state.html" with message="Something went wrong. Please try again." %} #}
+<div class="empty-state-container rounded-3 border bg-white" role="alert">
+    <i class="bi bi-exclamation-triangle empty-icon" style="color:var(--lt-danger);" aria-hidden="true"></i>
+    <h3>Something went wrong</h3>
+    <p>{{ message|default:"We could not load this content. Please try again in a moment." }}</p>
+    {% if retry_url %}
+    <a href="{{ retry_url }}" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-clockwise me-1"></i>Try again
+    </a>
+    {% endif %}
+</div>

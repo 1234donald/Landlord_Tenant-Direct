@@ -1,0 +1,57 @@
+{# Apartment card component #}
+{# Usage: {% include "components/apartment_card.html" with apartment=item rec_rank=1 rec_distance=0.12 %} #}
+<div class="card h-100 shadow-sm border-0 mb-3">
+    <div class="position-relative">
+        {% if rec_rank %}
+        <span class="rec-rank-badge" aria-label="Rank {{ rec_rank }}">
+            <i class="bi bi-trophy me-1"></i>#{{ rec_rank }}
+        </span>
+        {% endif %}
+        {% with cover=apartment.images.first %}
+            {% if cover %}
+            <img src="{{ cover.image.url }}" class="card-img-top apartment-card-img"
+                 alt="Photo of {{ apartment.title }}" loading="lazy">
+            {% else %}
+            <div class="card-img-top apartment-card-img d-flex align-items-center justify-content-center bg-secondary bg-opacity-10">
+                <i class="bi bi-house-door fs-1 text-secondary opacity-50" aria-hidden="true"></i>
+            </div>
+            {% endif %}
+        {% endwith %}
+        <span class="position-absolute top-0 end-0 m-2 {% if apartment.availability %}badge text-bg-success{% else %}badge text-bg-secondary{% endif %}">
+            {% if apartment.availability %}Available{% else %}Unavailable{% endif %}
+        </span>
+    </div>
+    <div class="card-body d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+            <h5 class="card-title mb-0">{{ apartment.title }}</h5>
+            {% if rec_distance is not None %}
+            <span class="rec-similarity ms-2" title="Similarity score derived from the weighted distance">
+                <i class="bi bi-stars me-1"></i>Similarity score: {{ rec_distance|floatformat:2 }}
+            </span>
+            {% endif %}
+        </div>
+        <p class="card-text text-muted small mb-2">
+            <i class="bi bi-geo-alt me-1"></i>{{ apartment.location }}
+        </p>
+        <p class="card-text mb-2">
+            <i class="bi bi-currency-naira text-primary"></i>
+            <strong class="fs-5">{{ apartment.rental_price|floatformat:0 }}</strong>
+            <span class="text-muted small">/ month</span>
+        </p>
+        <div class="small text-muted mb-2 d-flex flex-wrap gap-2">
+            <span><i class="bi bi-bounding-box me-1"></i>{{ apartment.get_apartment_type_display }}</span>
+            <span><i class="bi bi-door-closed me-1"></i>{{ apartment.bedrooms }} bd</span>
+            <span><i class="bi bi-droplet me-1"></i>{{ apartment.bathrooms }} ba</span>
+        </div>
+        <div class="small text-muted mb-2">
+            {% if apartment.parking %}<span class="me-2"><i class="bi bi-p-square-fill me-1"></i>Parking</span>{% endif %}
+            {% if apartment.electricity %}<span class="me-2"><i class="bi bi-lightning-charge-fill me-1"></i>Electricity</span>{% endif %}
+            {% if apartment.water %}<span class="me-2"><i class="bi bi-droplet-fill me-1"></i>Water</span>{% endif %}
+            {% if apartment.security %}<span><i class="bi bi-shield-lock-fill me-1"></i>Security</span>{% endif %}
+        </div>
+        <a href="{% url 'apartment-detail' apartment.pk %}"
+           class="btn btn-outline-primary mt-auto w-100">
+            <i class="bi bi-eye me-1"></i>View details
+        </a>
+    </div>
+</div>

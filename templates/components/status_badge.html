@@ -1,0 +1,20 @@
+{# Status badge component #}
+{# Usage: {% include "components/status_badge.html" with status=verification.status %} #}
+{#       {% include "components/status_badge.html" with status="APPROVED" %} #}
+{% if status %}
+    {% if status == "APPROVED" or status == "approved" %}
+        <span class="badge text-bg-success"><i class="bi bi-check-circle me-1"></i>Approved</span>
+    {% elif status == "REJECTED" or status == "rejected" %}
+        <span class="badge text-bg-danger"><i class="bi bi-x-circle me-1"></i>Rejected</span>
+    {% elif status == "PENDING" or status == "pending" %}
+        <span class="badge text-bg-warning"><i class="bi bi-hourglass me-1"></i>Pending</span>
+    {% else %}
+        <span class="badge text-bg-secondary"><i class="bi bi-question-circle me-1"></i>{{ status }}</span>
+    {% endif %}
+{% elif available is not None %}
+    {% if available %}
+        <span class="badge text-bg-success"><i class="bi bi-check-circle me-1"></i>Available</span>
+    {% else %}
+        <span class="badge text-bg-secondary"><i class="bi bi-x-circle me-1"></i>Unavailable</span>
+    {% endif %}
+{% endif %}
