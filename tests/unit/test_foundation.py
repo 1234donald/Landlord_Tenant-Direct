@@ -57,7 +57,16 @@ class UrlRoutingFoundationTests(SimpleTestCase):
 
 
 class BaseUiFoundationTests(SimpleTestCase):
-    """Verify the base template, navigation and static wiring render."""
+    """Verify the base template, navigation and static wiring render.
+
+    ``databases`` is set so ``test_home_renders_base_ui`` may read the platform
+    database: the homepage shows a "Featured apartments" section and an
+    available-listing count (FRONTEND_REQUIREMENTS.md section 9), which requires
+    read access to Apartment records. The class remains a SimpleTestCase
+    because the checks are read-only and transactional.
+    """
+
+    databases = {"default"}
 
     def setUp(self):
         # The test client defaults to the ``testserver`` host, which is not in
@@ -70,7 +79,7 @@ class BaseUiFoundationTests(SimpleTestCase):
         content = response.content.decode()
         self.assertIn("navbar", content)
         self.assertIn("footer", content)
-        self.assertIn("Landlord-Tenant Connect", content)
+        self.assertIn("Landlord–Tenant Direct Connect", content)
         self.assertIn("bootstrap.min.css", content)
         self.assertIn("main.css", content)
 
@@ -80,7 +89,7 @@ class BaseUiFoundationTests(SimpleTestCase):
         content = response.content.decode()
         self.assertIn("navbar", content)
         self.assertIn("footer", content)
-        self.assertIn("Landlord-Tenant Connect", content)
+        self.assertIn("Landlord–Tenant Direct Connect", content)
 
     def test_about_url_resolves(self):
         match = resolve("/about/")
