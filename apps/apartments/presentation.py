@@ -120,7 +120,8 @@ class ApartmentBrowseView(ListView):
     through the query string (location, apartment type, price range, bedrooms,
     bathrooms and facility flags). Only apartments currently available
     (``availability=True``) are shown so a listing that is unavailable is not
-    presented to prospective tenants.
+    presented to prospective tenants. A ``sort`` query parameter allows
+    price-based sorting (``price_asc`` / ``price_desc`` / ``newest`` / ``oldest``).
     """
 
     template_name = "apartments/list.html"
@@ -134,7 +135,18 @@ class ApartmentBrowseView(ListView):
             # A malformed search should not break browsing; fall back to all
             # available listings.
             queryset = Apartment.objects.all()
-        return queryset.filter(availability=True).prefetch_related("images")
+        queryset = queryset.filter(availability=True).prefetch_related("images")
+
+        sort = self.request.GET.get("sort")
+        if sort == "price_asc":
+            queryset = queryset.order_by("rental_price")
+        elif sort == "price_desc":
+            queryset = queryset.order_by("-rental_price")
+        elif sort == "oldest":
+            queryset = queryset.order_by("created_at")
+        else:
+            queryset = queryset.order_by("updated_at")
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -154,6 +166,13 @@ class ApartmentBrowseView(ListView):
             }
             for name, label in labels.items()
         ]
+        # Preserve every other filter when the sort control or pagination is
+        # changed.
+        context["query_without_sort"] = self.request.GET.copy()
+        context["query_without_sort"].pop("sort", None)
+        context["query_without_sort"].pop("page", None)
+        context["current_sort"] = self.request.GET.get("sort")
+        context["is_paginated"] = context.get("is_paginated", False)
         return context
 
 
@@ -162,7 +181,8 @@ class ApartmentDetailPageView(DetailView):
 
     Shows the structured listing data: price, type, bedrooms/bathrooms,
     facilities, availability and the landlord's permitted information, plus the
-    uploaded media gallery.
+    uploaded media gallery. Also exposes the landlord's latest verification
+    status (when present) so the page can display an appropriate badge.
     """
 
     model = Apartment
@@ -173,6 +193,17 @@ class ApartmentDetailPageView(DetailView):
         return Apartment.objects.prefetch_related("images").select_related(
             "landlord"
         )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        apartment = self.object
+        latest_verification = (
+            apartment.landlord.verification_requests.order_by("-submitted_at").first()
+            if hasattr(apartment.landlord, "verification_requests")
+            else None
+        )
+        context["landlord_verification"] = latest_verification
+        return context
 
 
 class MyApartmentsView(LoginRequiredMixin, ListView):

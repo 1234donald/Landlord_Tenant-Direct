@@ -324,6 +324,30 @@ class TenantDashboardView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
         if recommendation is not None:
             context["has_recommendations"] = True
             context["recommendation"] = recommendation
+            context["recommended_apartments"] = [
+                item.apartment for item in recommendation.items.all()[:6]
+            ]
+
+        # Recent available listings for a "recent listings" dashboard section.
+        context["recent_listings"] = (
+            Apartment.objects.filter(availability=True)
+            .prefetch_related("images")
+            .order_by("-updated_at")[:6]
+        )
+
+        # Profile summary for the dashboard sidebar.
+        context["profile_summary"] = {
+            "full_name": user.get_full_name() or user.email,
+            "email": user.email,
+            "phone": user.phone or "Not provided",
+        }
+
+        # Recent conversations preview.
+        context["recent_conversations"] = (
+            Conversation.objects.filter(tenant=user)
+            .select_related("landlord")
+            .order_by("-created_at")[:5]
+        )
         return context
 
 

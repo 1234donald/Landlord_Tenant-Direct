@@ -40,13 +40,25 @@ class ConversationListView(LoginRequiredMixin, RoleRequiredMixin, View):
     def get(self, request):
         user = request.user
         if user.is_tenant:
-            conversations = user.tenant_conversations.select_related(
-                "landlord"
-            ).prefetch_related("messages")
+            conversations = list(
+                user.tenant_conversations.select_related("landlord").prefetch_related(
+                    "messages"
+                )
+            )
         else:
-            conversations = user.landlord_conversations.select_related(
-                "tenant"
-            ).prefetch_related("messages")
+            conversations = list(
+                user.landlord_conversations.select_related("tenant").prefetch_related(
+                    "messages"
+                )
+            )
+        # Unread counts per conversation for role-aware badges (frontend only).
+        for conversation in conversations:
+            conversation.unread_count = sum(
+                1
+                for message in conversation.messages.all()
+                if message.recipient_id == user.id
+                and message.status == Message.Status.SENT
+            )
         return render(
             request,
             self.template_name,
