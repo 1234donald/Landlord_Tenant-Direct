@@ -16,6 +16,8 @@ python-dotenv==1.2.3
 
 # --- Images ---
 Pillow==12.3.0
+cloudinary==1.46.2
+django-cloudinary-storage==0.3.0
 
 # --- Machine learning ---
 numpy==2.5.2

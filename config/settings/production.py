@@ -8,6 +8,7 @@ Configured via environment variables: DEBUG=False, a strong SECRET_KEY,
 ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS and PostgreSQL credentials.
 """
 import os
+import urllib.parse
 
 from .base import *  # noqa: F401,F403
 from .base import env
@@ -58,9 +59,16 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # Production static file serving via WhiteNoise
 # ---------------------------------------------------------------------------
 MIDDLEWARE.insert(0, "whitenoise.middleware.WhiteNoiseMiddleware")  # noqa: F405
+
+# Media storage: use Cloudinary when CLOUDINARY_URL is provided (Render,
+# production), otherwise fall back to local file system (self-hosted).
+_media_backend = "django.core.files.storage.FileSystemStorage"
+if env("CLOUDINARY_URL"):
+    _media_backend = "cloudinary_storage.storage.CloudinaryMediaStorage"
+
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": _media_backend,
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
@@ -70,10 +78,27 @@ STORAGES = {
 # ---------------------------------------------------------------------------
 # Production database
 # ---------------------------------------------------------------------------
-DATABASES["default"]["HOST"] = env("DATABASE_HOST", "")  # noqa: F405
-DATABASES["default"]["PORT"] = env("DATABASE_PORT", "5432")  # noqa: F405
-DATABASES["default"]["USER"] = env("DATABASE_USER", "")  # noqa: F405
-DATABASES["default"]["PASSWORD"] = env("DATABASE_PASSWORD", "")  # noqa: F405
+# Render (and similar platforms) supply a single DATABASE_URL environment
+# variable.  When it is present we parse it and use it; otherwise we fall back
+# to the individual DATABASE_* variables already inherited from base.py.
+# This preserves full local development compatibility without requiring any
+# new third-party dependency.
+DATABASE_URL = env("DATABASE_URL")
+if DATABASE_URL:
+    url = urllib.parse.urlparse(DATABASE_URL)
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": url.path[1:],          # strip leading "/"
+        "USER": url.username or "",
+        "PASSWORD": url.password or "",
+        "HOST": url.hostname or "",
+        "PORT": url.port or "5432",
+    }
+else:
+    DATABASES["default"]["HOST"] = env("DATABASE_HOST", "")  # noqa: F405
+    DATABASES["default"]["PORT"] = env("DATABASE_PORT", "5432")  # noqa: F405
+    DATABASES["default"]["USER"] = env("DATABASE_USER", "")  # noqa: F405
+    DATABASES["default"]["PASSWORD"] = env("DATABASE_PASSWORD", "")  # noqa: F405
 
 # ---------------------------------------------------------------------------
 # Production email (Django 6.1 MAILERS)
