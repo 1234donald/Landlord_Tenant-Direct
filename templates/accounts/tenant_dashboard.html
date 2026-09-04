@@ -1,104 +1,142 @@
 {% extends "base.html" %}
 
-{% block title %}Tenant dashboard - Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}Tenant dashboard | LT Direct{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-4">
-    <i class="bi bi-speedometer2 me-2"></i>Tenant dashboard
-</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="bi bi-speedometer2 me-2" style="color:var(--lt-primary);"></i>Tenant dashboard
+        </h1>
+        <p class="text-muted small mb-0">
+            Welcome back, {{ request.user.get_full_name|default:request.user.email }}.
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ browse_url }}" class="btn btn-primary">
+            <i class="bi bi-search me-1"></i>Browse apartments
+        </a>
+        <a href="{% url 'edit-preference' %}" class="btn btn-outline-primary">
+            <i class="bi bi-sliders me-1"></i>Preferences
+        </a>
+    </div>
+</div>
 
-<div class="row g-4 mb-4">
-    <div class="col-md-4">
-        <div class="card stat-card h-100">
-            <div class="card-body">
-                <h2 class="h6 text-muted">Conversations</h2>
-                <p class="fs-3 mb-0">{{ conversation_count }}</p>
-            </div>
-        </div>
+{# ── Stats ── #}
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        {% include "components/stat_card.html" with icon="bi-conversation" label="Conversations" value=conversation_count %}
     </div>
-    <div class="col-md-4">
-        <div class="card stat-card h-100">
-            <div class="card-body">
-                <h2 class="h6 text-muted">Unread messages</h2>
-                <p class="fs-3 mb-0">{{ unread_count }}</p>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include "components/stat_card.html" with icon="bi-envelope-dash" label="Unread messages" value=unread_count %}
     </div>
-    <div class="col-md-4">
-        <div class="card stat-card h-100">
-            <div class="card-body">
-                <h2 class="h6 text-muted">Preferences saved</h2>
-                <p class="fs-3 mb-0">{% if has_preference %}Yes{% else %}No{% endif %}</p>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include "components/stat_card.html" with icon="bi-sliders" label="Preferences" value_yes=has_preference %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include "components/stat_card.html" with icon="bi-stars" label="Recommendations" value_yes=has_recommendations %}
     </div>
 </div>
 
 <div class="row g-4">
-    <div class="col-lg-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-body">
-                <h2 class="h5"><i class="bi bi-search me-2"></i>Find an apartment</h2>
-                <p class="text-muted small">
-                    Browse and filter available listings across the platform.
-                </p>
-                <a href="{{ browse_url }}" class="btn btn-primary">Browse apartments</a>
+    {# ── Main column ── #}
+    <div class="col-lg-8">
+        {# Recommendations preview #}
+        <section class="section-title d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0"><i class="bi bi-stars me-2 text-primary"></i>Recommended for you</h2>
+            {% if has_recommendations %}<a href="{% url 'recent-recommendations' %}" class="btn btn-sm btn-outline-primary">View all</a>{% endif %}
+        </section>
+        {% if has_recommendations and recommended_apartments %}
+        <div class="row g-3 mb-4">
+            {% for apartment in recommended_apartments %}
+            <div class="col-sm-6">
+                {% include "components/apartment_card.html" with apartment=apartment %}
             </div>
+            {% endfor %}
         </div>
-    </div>
+        {% else %}
+        <div class="mb-4">
+            {% include "components/empty_state.html" with icon="bi-magic" title="No recommendations yet" description="Set your apartment preferences and we'll use Weighted KNN to rank the best matches for you." action_url="/tenant/preferences/" action_text="Set preferences" %}
+        </div>
+        {% endif %}
 
-    <div class="col-lg-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-body">
-                <h2 class="h5"><i class="bi bi-sliders me-2"></i>Your preferences</h2>
-                {% if has_preference %}
-                <p class="text-muted small">
-                    {% if latest_preference.location %}Location: {{ latest_preference.location }}<br>{% endif %}
-                    {% if latest_preference.max_rent %}Max rent: &#8358;{{ latest_preference.max_rent }}<br>{% endif %}
-                    {% if latest_preference.bedrooms %}Bedrooms: {{ latest_preference.bedrooms }}{% endif %}
-                </p>
-                <a href="{% url 'edit-preference' %}" class="btn btn-outline-primary btn-sm">Update preferences</a>
+        {# Message activity #}
+        <section class="section-title d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0"><i class="bi bi-chat-dots me-2 text-primary"></i>Messages</h2>
+            <a href="{% url 'tenant-messages' %}" class="btn btn-sm btn-outline-primary">Go to messages</a>
+        </section>
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-0">
+                {% if recent_conversations %}
+                <ul class="list-group list-group-flush">
+                    {% for conversation in recent_conversations %}
+                    <li class="list-group-item d-flex align-items-center gap-3">
+                        <i class="bi bi-person-circle fs-4" style="color:var(--lt-primary);"></i>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="fw-semibold text-truncate">{{ conversation.landlord.full_name }}</div>
+                            <div class="small text-muted text-truncate">{{ conversation.landlord.email }}</div>
+                        </div>
+                        <a href="{% url 'conversation-detail' conversation.pk %}" class="btn btn-sm btn-outline-primary">
+                            View thread
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
                 {% else %}
-                <p class="text-muted small">
-                    Save your apartment preferences to receive personalised
-                    recommendations.
-                </p>
-                <a href="{% url 'edit-preference' %}" class="btn btn-primary">Set preferences</a>
+                <div class="p-4 text-center">
+                    <i class="bi bi-chat-square-text fs-2 text-muted opacity-50" aria-hidden="true"></i>
+                    <p class="text-muted mt-2 mb-0">No conversations yet. Browse apartments and contact a landlord.</p>
+                </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
+    {# ── Sidebar ── #}
     <div class="col-lg-4">
-        <div class="card shadow-sm h-100">
+        <div class="card shadow-sm border-0 mb-4">
             <div class="card-body">
-                <h2 class="h5"><i class="bi bi-stars me-2"></i>Recommendations</h2>
-                {% if has_recommendations %}
-                <p class="text-muted small">
-                    Your latest Weighted KNN run recommends
-                    {{ recommendation.items.count }} apartments.
-                </p>
-                <a href="{% url 'recent-recommendations' %}" class="btn btn-outline-primary btn-sm">View recommendations</a>
+                <h2 class="h6 text-uppercase text-muted">Your preferences</h2>
+                {% if has_preference and latest_preference %}
+                <dl class="small mb-3">
+                    {% if latest_preference.location %}<dt>Location</dt><dd>{{ latest_preference.location }}</dd>{% endif %}
+                    {% if latest_preference.max_rent %}<dt>Max rent</dt><dd>&#8358;{{ latest_preference.max_rent|floatformat:0 }}</dd>{% endif %}
+                    {% if latest_preference.apartment_type %}<dt>Type</dt><dd>{{ latest_preference.get_apartment_type_display }}</dd>{% endif %}
+                    {% if latest_preference.bedrooms %}<dt>Bedrooms</dt><dd>{{ latest_preference.bedrooms }}</dd>{% endif %}
+                    {% if latest_preference.bathrooms %}<dt>Bathrooms</dt><dd>{{ latest_preference.bathrooms }}</dd>{% endif %}
+                </dl>
+                <a href="{% url 'edit-preference' %}" class="btn btn-outline-primary btn-sm w-100">Update preferences</a>
                 {% else %}
-                <p class="text-muted small">
-                    No recommendation run yet. Set your preferences to begin.
+                <p class="small text-muted mb-3">
+                    Save your apartment preferences to receive personalised recommendations.
                 </p>
-                <a href="{% url 'edit-preference' %}" class="btn btn-outline-primary btn-sm">Get started</a>
+                <a href="{% url 'edit-preference' %}" class="btn btn-primary btn-sm w-100">Set preferences</a>
                 {% endif %}
             </div>
         </div>
-    </div>
-</div>
 
-<div class="card shadow-sm mt-4">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h5 mb-0"><i class="bi bi-chat-dots me-2"></i>Messages</h2>
-            <a href="{% url 'tenant-messages' %}" class="btn btn-outline-primary btn-sm">Go to messages</a>
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h2 class="h6 text-uppercase text-muted">Profile</h2>
+                <dl class="small mb-2">
+                    <dt>Name</dt><dd>{{ profile_summary.full_name }}</dd>
+                    <dt>Email</dt><dd>{{ profile_summary.email }}</dd>
+                    <dt>Phone</dt><dd>{{ profile_summary.phone }}</dd>
+                </dl>
+                <a href="{% url 'tenant-profile' %}" class="btn btn-outline-secondary btn-sm w-100">Edit profile</a>
+            </div>
         </div>
-        <p class="text-muted small mb-0 mt-2">
-            {% if conversation_count %}You have {{ conversation_count }} conversation(s) and {{ unread_count }} unread message(s).{% else %}No conversations yet. Browse apartments and contact a landlord to start one.{% endif %}
-        </p>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h2 class="h6 text-uppercase text-muted">Know more</h2>
+                <p class="small text-muted mb-0">
+                    Recommendations use <strong>Weighted KNN</strong> - the system ranks apartments
+                    by how closely their features match your stated preferences. Lower distance
+                    means a higher match.
+                </p>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

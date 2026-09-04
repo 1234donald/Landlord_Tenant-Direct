@@ -1,15 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}My preferences - Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}My preferences | LT Direct{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-8 mx-auto">
-        <h1 class="h3 mb-1">My apartment preferences</h1>
-        <p class="text-muted mb-4">
-            Tell us what you are looking for. Your preferences are used by the
-            Weighted KNN recommender to rank available apartments for you.
-        </p>
+<div class="auth-shell" style="max-width:860px;">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div style="width:52px;height:52px;border-radius:14px;background:var(--lt-primary-light);color:var(--lt-primary);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">
+            <i class="bi bi-sliders" aria-hidden="true"></i>
+        </div>
+        <div>
+            <h1 class="h3 mb-0">My apartment preferences</h1>
+            <p class="text-muted small mb-0">
+                Used by the Weighted KNN recommender to rank available apartments for you.
+            </p>
+        </div>
+    </div>
 
         {% if form.non_field_errors %}
         <div class="alert alert-danger" role="alert">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
@@ -79,6 +84,5 @@
                 </div>
             </div>
         </form>
-    </div>
 </div>
 {% endblock %}

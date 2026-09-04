@@ -1,86 +1,65 @@
 {% extends "base.html" %}
-{% block title %}My Recommendations | Landlord-Tenant Direct Connect{% endblock %}
-{% block content %}
-<h1 class="mb-4">
-    <i class="bi bi-stars me-2"></i>Recommended for you
-</h1>
 
-<p class="text-muted">
-    These apartments are ranked by how closely they match your saved preferences
-    using Weighted KNN. Rank 1 is the closest match.
-</p>
+{% block title %}Recommended for you | LT Direct{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="bi bi-stars me-2" style="color:var(--lt-primary);"></i>Recommended for you
+        </h1>
+        <p class="text-muted small mb-0">
+            Ranked by how closely each apartment matches your saved preferences using
+            Weighted KNN. Rank 1 is the closest match.
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'edit-preference' %}" class="btn btn-outline-primary">
+            <i class="bi bi-sliders me-1"></i>Edit preferences
+        </a>
+        <form method="post" action="{% url 'recommendation-results' %}" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-arrow-repeat me-1"></i>
+                {% if recommendation %}Refresh recommendations{% else %}Generate recommendations{% endif %}
+            </button>
+        </form>
+    </div>
+</div>
 
 {% if not has_preference %}
-<div class="alert alert-warning">
-    You have not saved any apartment preferences yet. Save your preferences first
-    so we can personalise recommendations.
+<div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-exclamation-triangle me-1"></i>
+    <div>
+        You have not saved any apartment preferences yet. Save your preferences first so we can personalise recommendations.
+        <a href="{% url 'edit-preference' %}" class="fw-semibold">Set preferences</a>.
+    </div>
 </div>
 {% endif %}
 
-<form method="post" action="{% url 'recommendation-results' %}" class="mb-4">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">
-        {% if recommendation %}Refresh recommendations{% else %}Generate recommendations{% endif %}
-    </button>
-</form>
-
 {% if recommendation %}
-<div class="alert alert-success small">
-    Recommendation run #{{ recommendation.id }} ·
-    Weighted KNN (k = {{ recommendation.k }}) ·
-    {{ recommendation.created_at|date:"j M Y H:i" }}
+<div class="alert alert-success small d-flex flex-wrap align-items-center gap-2" role="alert">
+    <i class="bi bi-cpu me-1" aria-hidden="true"></i>
+    <span>Weighted KNN run #{{ recommendation.id }}</span>
+    <span class="badge text-bg-light border">k = {{ recommendation.k }}</span>
+    <span>{{ recommendation.created_at|date:"j M Y H:i" }}</span>
+    <span class="text-muted ms-auto">Recommendations are similarity-based, not a guarantee.</span>
 </div>
 
 <div class="row g-4">
     {% for item in recommendation.items.all %}
     <div class="col-sm-6 col-lg-4">
-        <div class="card h-100 shadow-sm">
-            {% with cover=item.apartment.images.first %}
-            {% if cover %}
-            <img src="{{ cover.image.url }}" class="card-img-top apartment-card-img"
-                 alt="Photo of {{ item.apartment.title }}">
-            {% else %}
-            <div class="card-img-top apartment-card-img d-flex align-items-center
-                        justify-content-center bg-secondary bg-opacity-10">
-                <i class="bi bi-house-door fs-1 text-secondary"></i>
-            </div>
-            {% endif %}
-            {% endwith %}
-            <div class="card-body d-flex flex-column">
-                <div class="d-flex justify-content-between align-items-start">
-                    <h5 class="card-title mb-1">{{ item.apartment.title }}</h5>
-                    <span class="badge text-bg-primary">Rank {{ item.rank }}</span>
-                </div>
-                <p class="card-text text-muted mb-1">
-                    <i class="bi bi-geo-alt me-1"></i>{{ item.apartment.location }}
-                </p>
-                <p class="card-text mb-2">
-                    <i class="bi bi-currency-naira"></i>
-                    <strong>{{ item.apartment.rental_price|floatformat:0 }}</strong>
-                    <span class="text-muted">/ month</span>
-                </p>
-                <div class="small text-muted mb-2">
-                    <span class="me-2">{{ item.apartment.get_apartment_type_display }}</span>
-                    <span class="me-2">{{ item.apartment.bedrooms }} bd</span>
-                    <span>{{ item.apartment.bathrooms }} ba</span>
-                </div>
-                <div class="small mb-2">
-                    <span class="badge text-bg-light border">Similarity score:
-                        {{ item.similarity|floatformat:3 }}</span>
-                </div>
-                <a href="{% url 'apartment-detail' item.apartment.pk %}" class="btn btn-primary mt-auto">
-                    View details
-                </a>
-            </div>
-        </div>
+        {% include "components/apartment_card.html" with apartment=item.apartment rec_rank=item.rank rec_distance=item.distance %}
     </div>
     {% endfor %}
 </div>
-
 {% elif has_preference %}
-<div class="alert alert-info">
-    No apartments matched your current preferences.
+<div class="mt-4">
+    {% include "components/empty_state.html" with icon="bi-search" title="No apartments matched your preferences" description="Try adjusting your preferences to explore more available listings." action_url="/tenant/preferences/" action_text="Edit preferences" %}
+</div>
+{% else %}
+<div class="mt-4">
+    {% include "components/empty_state.html" with icon="bi-stars" title="Ready for personalised recommendations" description="Set your preferences and we'll rank the best apartment matches for you using Weighted KNN." action_url="/tenant/preferences/" action_text="Set preferences" %}
 </div>
 {% endif %}
-
 {% endblock %}
