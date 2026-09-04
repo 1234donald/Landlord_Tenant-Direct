@@ -1,29 +1,43 @@
 {% extends "base.html" %}
-{% block title %}{% if is_admin_view %}All Apartments{% else %}My Apartments{% endif %} | Landlord-Tenant Direct Connect{% endblock %}
-{% block content %}
-<h1 class="mb-4">
-    {% if is_admin_view %}All Apartments{% else %}My Apartments{% endif %}
-</h1>
 
-{% if not is_admin_view %}
-<div class="mb-4">
+{% block title %}{% if is_admin_view %}All apartments{% else %}My apartments{% endif %} | LT Direct{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="bi bi-building me-2" style="color:var(--lt-primary);"></i>
+            {% if is_admin_view %}All apartments{% else %}My apartments{% endif %}
+        </h1>
+        <p class="text-muted small mb-0">
+            {% if is_admin_view %}Every listing on the platform.{% else %}Manage your apartment listings and their availability.{% endif %}
+        </p>
+    </div>
+    {% if not is_admin_view %}
     <a href="{% url 'apartment-create' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>New listing
     </a>
+    {% endif %}
 </div>
-{% endif %}
 
 {% if apartments %}
 <div class="row g-4">
     {% for apartment in apartments %}
-    <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <h5 class="card-title mb-0">{{ apartment.title }}</h5>
-                    <span class="badge {% if apartment.availability %}text-bg-success{% else %}text-bg-secondary{% endif %}">
-                        {% if apartment.availability %}Available{% else %}Unavailable{% endif %}
-                    </span>
+    <div class="col-md-6 col-xl-4">
+        <div class="card shadow-sm border-0 h-100">
+            {% with cover=apartment.images.first %}
+            {% if cover %}
+            <img src="{{ cover.image.url }}" class="card-img-top apartment-card-img" alt="Photo of {{ apartment.title }}" loading="lazy">
+            {% else %}
+            <div class="card-img-top apartment-card-img d-flex align-items-center justify-content-center bg-secondary bg-opacity-10">
+                <i class="bi bi-house-door fs-1 text-secondary" aria-hidden="true"></i>
+            </div>
+            {% endif %}
+            {% endwith %}
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <h2 class="h5 card-title mb-0">{{ apartment.title }}</h2>
+                    {% include "components/status_badge.html" with available=apartment.availability %}
                 </div>
                 <p class="text-muted small mb-1">
                     <i class="bi bi-geo-alt me-1"></i>{{ apartment.location }}
@@ -38,7 +52,7 @@
                 <div class="small text-muted mb-3">
                     {{ apartment.images.count }} photo{{ apartment.images.count|pluralize }} &middot; Listed {{ apartment.created_at|date:"M d, Y" }}
                 </div>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 mt-auto">
                     <a href="{% url 'apartment-detail' apartment.pk %}" class="btn btn-outline-primary btn-sm">View</a>
                     {% if not is_admin_view %}
                     <a href="{% url 'apartment-edit' apartment.pk %}" class="btn btn-outline-secondary btn-sm">
@@ -52,8 +66,10 @@
     {% endfor %}
 </div>
 {% else %}
-<div class="alert alert-info">
-    {% if is_admin_view %}No apartments have been created yet.{% else %}You have not created any apartment listings yet. <a href="{% url 'apartment-create' %}">Create your first listing</a>.{% endif %}
-</div>
+{% if is_admin_view %}
+{% include "components/empty_state.html" with icon="bi-building" title="No apartments have been created yet" description="Listings will appear here once landlords publish them." %}
+{% else %}
+{% include "components/empty_state.html" with icon="bi-house-add" title="You have no listings yet" description="Create your first listing so tenants can find your apartments." action_url="/landlord/apartments/create/" action_text="Create listing" %}
+{% endif %}
 {% endif %}
 {% endblock %}

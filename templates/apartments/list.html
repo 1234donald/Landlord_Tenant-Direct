@@ -1,110 +1,129 @@
 {% extends "base.html" %}
-{% block title %}Browse Apartments | Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}Browse Apartments | LT Direct{% endblock %}
 {% block content %}
-<h1 class="mb-4">Browse Apartments</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="h3 mb-1">Browse Apartments</h1>
+        <p class="text-muted small mb-0">
+            Search available listings or refine your criteria below.
+        </p>
+    </div>
+    <span class="filter-count badge text-bg-light border">
+        <i class="bi bi-building me-1"></i>{{ paginator.count }} listing{{ paginator.count|pluralize }} available
+    </span>
+</div>
 
-<form method="get" action="{% url 'apartment-list' %}" class="row g-2 mb-4">
-    <div class="col-md-4">
-        <input type="text" name="location" class="form-control" placeholder="Location"
-               value="{{ request.GET.location }}">
+{# ── Search & filter panel ── #}
+<form method="get" action="{% url 'apartment-list' %}" class="filter-panel mb-4" role="search" aria-label="Filter apartments">
+    <div class="row g-2">
+        <div class="col-md-4 col-lg-3">
+            <label class="visually-hidden" for="f-location">Location</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                <input type="text" id="f-location" name="location" class="form-control" placeholder="Location"
+                       value="{{ request.GET.location }}">
+            </div>
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <label class="visually-hidden" for="f-type">Apartment type</label>
+            <select name="apartment_type" id="f-type" class="form-select">
+                <option value="">Apartment type</option>
+                {% for value, label in apartment_types %}
+                <option value="{{ value }}" {% if request.GET.apartment_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 col-lg-2">
+            <label class="visually-hidden" for="f-min">Minimum price</label>
+            <input type="number" id="f-min" name="min_price" class="form-control" placeholder="Min (₦)"
+                   value="{{ request.GET.min_price }}" min="0">
+        </div>
+        <div class="col-md-2 col-lg-2">
+            <label class="visually-hidden" for="f-max">Maximum price</label>
+            <input type="number" id="f-max" name="max_price" class="form-control" placeholder="Max (₦)"
+                   value="{{ request.GET.max_price }}" min="0">
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <label class="visually-hidden" for="f-sort">Sort by</label>
+            <select name="sort" id="f-sort" class="form-select">
+                <option value="" {% if not current_sort %}selected{% endif %}>Recently updated</option>
+                <option value="price_asc" {% if current_sort == "price_asc" %}selected{% endif %}>Price: low to high</option>
+                <option value="price_desc" {% if current_sort == "price_desc" %}selected{% endif %}>Price: high to low</option>
+                <option value="newest" {% if current_sort == "newest" %}selected{% endif %}>Newest first</option>
+                <option value="oldest" {% if current_sort == "oldest" %}selected{% endif %}>Oldest first</option>
+            </select>
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <label class="visually-hidden" for="f-bedrooms">Bedrooms</label>
+            <input type="number" id="f-bedrooms" name="bedrooms" class="form-control" placeholder="Bedrooms"
+                   value="{{ request.GET.bedrooms }}" min="1">
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <label class="visually-hidden" for="f-bathrooms">Bathrooms</label>
+            <input type="number" id="f-bathrooms" name="bathrooms" class="form-control" placeholder="Bathrooms"
+                   value="{{ request.GET.bathrooms }}" min="1">
+        </div>
     </div>
-    <div class="col-md-2">
-        <select name="apartment_type" class="form-select">
-            <option value="">Apartment type</option>
-            {% for value, label in apartment_types %}
-            <option value="{{ value }}" {% if request.GET.apartment_type == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-md-2">
-        <input type="number" name="min_price" class="form-control" placeholder="Min price"
-               value="{{ request.GET.min_price }}">
-    </div>
-    <div class="col-md-2">
-        <input type="number" name="max_price" class="form-control" placeholder="Max price"
-               value="{{ request.GET.max_price }}">
-    </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Search</button>
-    </div>
-    <div class="col-md-4">
-        <input type="number" name="bedrooms" class="form-control" placeholder="Bedrooms"
-               value="{{ request.GET.bedrooms }}">
-    </div>
-    <div class="col-md-4">
-        <input type="number" name="bathrooms" class="form-control" placeholder="Bathrooms"
-               value="{{ request.GET.bathrooms }}">
-    </div>
-    <div class="col-md-12 d-flex align-items-center gap-3 small text-muted">
-        <span>Facilities:</span>
+
+    <div class="d-flex flex-wrap align-items-center gap-3 mt-3 small text-muted">
+        <span class="fw-semibold">Facilities:</span>
         {% for facility in facility_fields %}
-        <div class="form-check form-check-inline">
+        <div class="form-check form-check-inline mb-0">
             <input class="form-check-input" type="checkbox" name="{{ facility.name }}" value="on"
                    id="f-{{ facility.name }}" {% if facility.checked %}checked{% endif %}>
             <label class="form-check-label" for="f-{{ facility.name }}">{{ facility.label }}</label>
         </div>
         {% endfor %}
     </div>
+
+    <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search me-1"></i>Search
+        </button>
+        <a href="{% url 'apartment-list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle me-1"></i>Clear filters
+        </a>
+    </div>
 </form>
 
+{# ── Results ── #}
 {% if apartments %}
 <div class="row g-4">
     {% for apartment in apartments %}
     <div class="col-sm-6 col-lg-4">
-        <div class="card h-100 shadow-sm">
-            {% with cover=apartment.images.first %}
-            {% if cover %}
-            <img src="{{ cover.image.url }}" class="card-img-top apartment-card-img"
-                 alt="Photo of {{ apartment.title }}">
-            {% else %}
-            <div class="card-img-top apartment-card-img d-flex align-items-center
-                        justify-content-center bg-secondary bg-opacity-10">
-                <i class="bi bi-house-door fs-1 text-secondary"></i>
-            </div>
-            {% endif %}
-            {% endwith %}
-            <div class="card-body d-flex flex-column">
-                <h5 class="card-title">{{ apartment.title }}</h5>
-                <p class="card-text text-muted mb-1">
-                    <i class="bi bi-geo-alt me-1"></i>{{ apartment.location }}
-                </p>
-                <p class="card-text mb-2">
-                    <i class="bi bi-currency-naira"></i>
-                    <strong>{{ apartment.rental_price|floatformat:0 }}</strong>
-                    <span class="text-muted">/ month</span>
-                </p>
-                <div class="small text-muted mb-2">
-                    <span class="me-2"><i class="bi bi-bounding-box me-1"></i>{{ apartment.get_apartment_type_display }}</span>
-                    <span class="me-2"><i class="bi bi-door-closed me-1"></i>{{ apartment.bedrooms }} bd</span>
-                    <span><i class="bi bi-droplet me-1"></i>{{ apartment.bathrooms }} ba</span>
-                </div>
-                <span class="badge {% if apartment.availability %}text-bg-success{% else %}text-bg-secondary{% endif %} align-self-start">
-                    {% if apartment.availability %}Available{% else %}Unavailable{% endif %}
-                </span>
-                <a href="{% url 'apartment-detail' apartment.pk %}" class="btn btn-primary mt-3">
-                    View details
-                </a>
-            </div>
-        </div>
+        {% include "components/apartment_card.html" with apartment=apartment %}
     </div>
     {% endfor %}
 </div>
 
-{% if is_paginated %}
+{# ── Pagination ── #}
+{% if page_obj.has_other_pages %}
 <nav class="mt-4" aria-label="Apartment pages">
     <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        <li class="page-item">
+            <a class="page-link" href="?{{ query_without_sort.urlencode }}&amp;page={{ page_obj.previous_page_number }}" aria-label="Previous page">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        </li>
         {% endif %}
-        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        <li class="page-item disabled">
+            <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        </li>
         {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        <li class="page-item">
+            <a class="page-link" href="?{{ query_without_sort.urlencode }}&amp;page={{ page_obj.next_page_number }}" aria-label="Next page">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
         {% endif %}
     </ul>
 </nav>
 {% endif %}
 
 {% else %}
-<div class="alert alert-info">No apartments are currently available.</div>
+<div class="mt-3">
+    {% include "components/empty_state.html" with icon="bi-buildings" title="No apartments are currently available" description="No apartments are currently available. Try adjusting or removing some filters to see more listings." action_url="/apartments/" action_text="Clear all filters" %}
+</div>
 {% endif %}
 {% endblock %}

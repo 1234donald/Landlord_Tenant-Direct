@@ -1,42 +1,46 @@
 {% extends "base.html" %}
 
-{% block title %}{% if is_edit %}Edit {{ apartment.title }}{% else %}New apartment listing{% endif %} - Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}{% if is_edit %}Edit {{ apartment.title }}{% else %}New apartment listing{% endif %} | LT Direct{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-4">
-    {% if is_edit %}<i class="bi bi-pencil-square me-2"></i>Edit listing{% else %}<i class="bi bi-plus-square me-2"></i>New apartment listing{% endif %}
-</h1>
+{% if is_edit %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'landlord-dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'my-apartments' %}">My listings</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit listing</li>
+    </ol>
+</nav>
+{% endif %}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <div style="width:52px;height:52px;border-radius:14px;background:var(--lt-primary-light);color:var(--lt-primary);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">
+        <i class="bi {% if is_edit %}bi-pencil-square{% else %}bi-house-add{% endif %}" aria-hidden="true"></i>
+    </div>
+    <div>
+        <h1 class="h3 mb-0">{% if is_edit %}Edit listing{% else %}New apartment listing{% endif %}</h1>
+        <p class="text-muted small mb-0">
+            {% if is_edit %}Update this listing's details and photos.{% else %}Describe your apartment so tenants can find it.{% endif %}
+        </p>
+    </div>
+</div>
 
 {% if form.non_field_errors %}
-<div class="alert alert-danger">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+<div class="alert alert-danger" role="alert">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
 {% endif %}
 
 <form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
     <div class="row g-4">
         <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-body">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h2 class="h6 text-uppercase text-muted mb-3">Listing details</h2>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label" for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
                             {{ form.title }}
                             {% if form.title.errors %}<div class="invalid-feedback d-block">{% for e in form.title.errors %}{{ e }}{% endfor %}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="{{ form.location.id_for_label }}">{{ form.location.label }}</label>
-                            {{ form.location }}
-                            {% if form.location.errors %}<div class="invalid-feedback d-block">{% for e in form.location.errors %}{{ e }}{% endfor %}</div>{% endif %}
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label" for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
-                            {{ form.address }}
-                            {% if form.address.errors %}<div class="invalid-feedback d-block">{% for e in form.address.errors %}{{ e }}{% endfor %}</div>{% endif %}
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
-                            {{ form.description }}
-                            {% if form.description.errors %}<div class="invalid-feedback d-block">{% for e in form.description.errors %}{{ e }}{% endfor %}</div>{% endif %}
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="{{ form.rental_price.id_for_label }}">{{ form.rental_price.label }}</label>
@@ -45,6 +49,21 @@
                                 {{ form.rental_price }}
                             </div>
                             {% if form.rental_price.errors %}<div class="invalid-feedback d-block">{% for e in form.rental_price.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.location.id_for_label }}">{{ form.location.label }}</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}<div class="invalid-feedback d-block">{% for e in form.location.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}<div class="invalid-feedback d-block">{% for e in form.address.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}<div class="invalid-feedback d-block">{% for e in form.description.errors %}{{ e }}{% endfor %}</div>{% endif %}
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="{{ form.apartment_type.id_for_label }}">{{ form.apartment_type.label }}</label>
@@ -61,34 +80,36 @@
                             {{ form.bathrooms }}
                             {% if form.bathrooms.errors %}<div class="invalid-feedback d-block">{% for e in form.bathrooms.errors %}{{ e }}{% endfor %}</div>{% endif %}
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label" for="{{ form.availability.id_for_label }}">{{ form.availability.label }}</label>
-                            <div class="form-check form-switch mt-2">
+                        <div class="col-12">
+                            <div class="form-check form-switch">
                                 {{ form.availability }}
-                                <label class="form-check-label" for="{{ form.availability.id_for_label }}">Availability</label>
+                                <label class="form-check-label" for="{{ form.availability.id_for_label }}">Make this listing available to tenants</label>
                             </div>
+                            {% if form.availability.errors %}<div class="invalid-feedback d-block">{% for e in form.availability.errors %}{{ e }}{% endfor %}</div>{% endif %}
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <fieldset class="mt-4">
-                        <legend class="h6">Facilities</legend>
-                        <div class="row g-2">
-                            {% for field in form %}
-                            {% if field.name in "parking electricity water security furnished" %}
-                            <div class="col-md-4">
-                                <div class="form-check form-switch">
-                                    {{ field }}
-                                    <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                </div>
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-body p-4">
+                    <h2 class="h6 text-uppercase text-muted mb-3">Facilities &amp; amenities</h2>
+                    <div class="row g-2">
+                        {% for field in form %}
+                        {% if field.name in "parking electricity water security furnished" %}
+                        <div class="col-md-4">
+                            <div class="form-check form-switch">
+                                {{ field }}
+                                <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                             </div>
-                            {% endif %}
-                            {% endfor %}
                         </div>
-                    </fieldset>
-
-                    <div class="mt-4">
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="mt-3">
                         <label class="form-label" for="{{ form.additional_facilities.id_for_label }}">{{ form.additional_facilities.label }}</label>
                         {{ form.additional_facilities }}
+                        <div class="form-text">e.g. "Metered electricity", "Close to a market".</div>
                         {% if form.additional_facilities.errors %}<div class="invalid-feedback d-block">{% for e in form.additional_facilities.errors %}{{ e }}{% endfor %}</div>{% endif %}
                     </div>
                 </div>
@@ -96,18 +117,40 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h2 class="h6 text-muted">Photos</h2>
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h6 text-uppercase text-muted">Photos</h2>
                     <p class="text-muted small">
                         Add up to 5 photos. JPG, PNG, WEBP or GIF up to 5&nbsp;MB each.
+                        Only genuine image files are accepted.
                     </p>
-                    <input type="file" name="images" class="form-control" accept=".jpg,.jpeg,.png,.webp,.gif">
-                    <div class="form-text">You can upload multiple photos.</div>
-                    <div class="mt-4 d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">{% if is_edit %}Save changes{% else %}Create listing{% endif %}</button>
-                        <a href="{% url 'my-apartments' %}" class="btn btn-outline-primary">Cancel</a>
+                    <input type="file" name="images" class="form-control" accept=".jpg,.jpeg,.png,.webp,.gif" multiple>
+                    <div class="form-text">You can upload multiple photos at once.</div>
+                    {% if is_edit %}
+                    <hr>
+                    <h3 class="h6 text-muted">Current photos</h3>
+                    {% with gallery=apartment.images.all %}
+                    {% if gallery %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for image in gallery %}
+                        <img src="{{ image.image.url }}" alt="Photo {{ forloop.counter }} of {{ apartment.title }}"
+                             style="width:64px;height:64px;object-fit:cover;border-radius:10px;" loading="lazy">
+                        {% endfor %}
                     </div>
+                    {% else %}
+                    <p class="text-muted small mb-0">No photos yet.</p>
+                    {% endif %}
+                    {% endwith %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 d-flex flex-column gap-2">
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        <i class="bi bi-check2 me-1"></i>{% if is_edit %}Save changes{% else %}Create listing{% endif %}
+                    </button>
+                    <a href="{% url 'my-apartments' %}" class="btn btn-outline-secondary w-100">Cancel</a>
                 </div>
             </div>
         </div>
