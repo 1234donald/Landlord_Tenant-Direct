@@ -1,30 +1,57 @@
 {% extends "base.html" %}
 
-{% block title %}New conversation - Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}Contact a landlord | LT Direct{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-4"><i class="bi bi-person-plus me-2"></i>Contact a landlord</h1>
+<div class="auth-shell" style="max-width:560px;">
+    <div class="text-center mb-4">
+        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+             style="width:64px;height:64px;border-radius:16px;background:var(--lt-primary-light);color:var(--lt-primary);font-size:1.75rem;">
+            <i class="bi bi-chat-dots" aria-hidden="true"></i>
+        </div>
+        <h1 class="h3 mb-1 fw-bold">Contact a landlord</h1>
+        <p class="text-muted small mb-0">
+            Start a direct conversation about a listing.
+        </p>
+    </div>
 
-<form method="post" class="card shadow-sm">
-    {% csrf_token %}
-    <div class="card-body">
-        <div class="mb-3">
+    <form method="post" class="card shadow-lg border-0" style="border-radius:var(--lt-radius-xl);">
+        {% csrf_token %}
+        <div class="card-body p-4">
             {% if preselected_id %}
             <input type="hidden" name="landlord" value="{{ preselected_id }}">
-            <p class="text-muted small mb-0">
+            <div class="alert alert-success small mb-3" role="alert">
+                <i class="bi bi-info-circle me-1"></i>
                 You are starting a conversation with this landlord.
-            </p>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-chat-dots me-1"></i>Start conversation
+            </button>
             {% else %}
-            <label class="form-label" for="landlord">Choose a landlord to contact</label>
-            <select name="landlord" id="landlord" class="form-select" required>
-                <option value="">-- Select a landlord --</option>
-                {% for entry in landlord_entries %}
-                <option value="{{ entry.id }}">{{ entry.full_name }} ({{ entry.location }})</option>
-                {% endfor %}
-            </select>
+            <div class="mb-3">
+                <label class="form-label" for="landlord">Choose a landlord to contact</label>
+                {% if landlord_entries %}
+                <select name="landlord" id="landlord" class="form-select" required>
+                    <option value="">-- Select a landlord --</option>
+                    {% for entry in landlord_entries %}
+                    <option value="{{ entry.id }}">{{ entry.full_name }} &middot; {{ entry.location }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Only landlords with available listings are shown.</div>
+                {% else %}
+                <div class="alert alert-warning small mb-0" role="alert">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    No landlords with available listings are currently on the platform.
+                </div>
+                {% endif %}
+            </div>
+            {% if landlord_entries %}
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-chat-dots me-1"></i>Start conversation
+            </button>
+            {% endif %}
             {% endif %}
         </div>
-        <button type="submit" class="btn btn-primary">Start conversation</button>
-    </div>
-</form>
+    </form>
+</div>
 {% endblock %}

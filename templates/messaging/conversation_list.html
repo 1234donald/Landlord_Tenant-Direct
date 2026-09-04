@@ -1,43 +1,58 @@
 {% extends "base.html" %}
 
-{% block title %}Messages - Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}Messages | LT Direct{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-4"><i class="bi bi-chat-dots me-2"></i>Messages</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="h3 mb-0"><i class="bi bi-chat-dots me-2" style="color:var(--lt-primary);"></i>Messages</h1>
+        <p class="text-muted small mb-0">
+            {% if user.is_tenant %}Direct chats with landlords.{% else %}Direct chats with tenants.{% endif %}
+        </p>
+    </div>
+</div>
 
 {% if conversations %}
-<div class="list-group shadow-sm">
+<div class="list-group shadow-sm border-0">
     {% for conversation in conversations %}
     <a href="{% url 'conversation-detail' conversation.pk %}"
-       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-        <div>
-            <strong>
+       class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3">
+        <div class="conv-avatar" aria-hidden="true">
+            <i class="bi bi-person-fill"></i>
+        </div>
+        <div class="flex-grow-1 min-w-0">
+            <div class="fw-semibold">
                 {% if user.is_tenant %}{{ conversation.landlord.get_full_name|default:conversation.landlord.email }}
                 {% else %}{{ conversation.tenant.get_full_name|default:conversation.tenant.email }}{% endif %}
-            </strong>
-            <div class="small text-muted">
+            </div>
+            <div class="small text-muted text-truncate">
+                <i class="bi bi-envelope me-1"></i>
+                {% if user.is_tenant %}{{ conversation.landlord.email }}{% else %}{{ conversation.tenant.email }}{% endif %}
+            </div>
+            <div class="small text-muted text-truncate">
                 {% with last=conversation.messages.last %}
-                {% if last %}{{ last.body|truncatechars:60 }} &middot; {{ last.created_at|timesince }} ago{% else %}No messages yet{% endif %}
+                {% if last %}
+                <i class="bi bi-chat-quote me-1"></i>{{ last.body|truncatechars:60 }} &middot; {{ last.created_at|timesince }} ago
+                {% else %}
+                <span class="fst-italic">No messages yet</span>
+                {% endif %}
                 {% endwith %}
             </div>
         </div>
-        {% with unread=conversation.messages %}
-        <span class="badge text-bg-primary">{{ unread|length }} message{{ unread|length|pluralize }}</span>
-        {% endwith %}
+        <div class="text-end flex-shrink-0">
+            {% if conversation.unread_count %}
+            <span class="badge rounded-pill text-bg-primary">{{ conversation.unread_count }} unread</span>
+            {% endif %}
+            <div class="small text-muted mt-1">View thread</div>
+        </div>
     </a>
     {% endfor %}
 </div>
 {% else %}
-<div class="alert alert-info empty-state">
-    <i class="bi bi-inbox me-1"></i>
-    {% if user.is_tenant %}
-    No conversations yet. Browse apartments and contact a landlord to get started.
-    {% else %}
-    No conversations yet. Tenants who contact you will appear here.
-    {% endif %}
-</div>
 {% if user.is_tenant %}
-<a href="{% url 'apartment-list' %}" class="btn btn-primary">Browse apartments</a>
+{% include "components/empty_state.html" with icon="bi-inbox" title="You have no conversations yet" description="Browse apartments and contact a landlord to start a conversation." action_url="/apartments/" action_text="Browse apartments" %}
+{% else %}
+{% include "components/empty_state.html" with icon="bi-inbox" title="No conversations yet" description="Tenants who contact you about your listings will appear here." %}
 {% endif %}
 {% endif %}
 {% endblock %}
