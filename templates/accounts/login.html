@@ -1,17 +1,24 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Log in - Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}Log in | LT Direct{% endblock %}
 
 {% block content %}
-<div class="auth-shell">
-    <div class="card shadow-sm">
-        <div class="card-body p-4">
-            <h1 class="h3 mb-1 auth-heading">Log in</h1>
-            <p class="text-muted mb-4">Access your dashboard to manage listings, recommendations and messages.</p>
+<div class="auth-shell" style="max-width:440px;">
+    <div class="text-center mb-4">
+        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+             style="width:64px;height:64px;border-radius:16px;background:var(--lt-primary-light);color:var(--lt-primary);font-size:1.75rem;">
+            <i class="bi bi-building" aria-hidden="true"></i>
+        </div>
+        <h1 class="h3 mb-1 fw-bold">Welcome back</h1>
+        <p class="text-muted mb-0 small">Log in to access your dashboard.</p>
+    </div>
 
+    <div class="card shadow-lg border-0" style="border-radius:var(--lt-radius-xl);">
+        <div class="card-body p-4">
             {% if form.non_field_errors %}
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
                 {% for error in form.non_field_errors %}{{ error }}{% endfor %}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -21,24 +28,32 @@
                 {% csrf_token %}
                 <div class="mb-3">
                     <label class="form-label" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
-                    {{ form.email }}
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        {{ form.email }}
+                    </div>
                     {% if form.email.errors %}
                     <div class="invalid-feedback d-block">{% for e in form.email.errors %}{{ e }}{% endfor %}</div>
                     {% endif %}
                 </div>
-                <div class="mb-3">
+                <div class="mb-4">
                     <label class="form-label" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
-                    {{ form.password }}
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        {{ form.password }}
+                    </div>
                     {% if form.password.errors %}
                     <div class="invalid-feedback d-block">{% for e in form.password.errors %}{{ e }}{% endfor %}</div>
                     {% endif %}
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Log in</button>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>Log in
+                </button>
             </form>
 
             <hr class="my-4">
-            <p class="text-center mb-0">
-                New to the platform? <a href="{% url 'register' %}">Create an account</a>
+            <p class="text-center mb-0 small">
+                New to the platform? <a href="{% url 'register' %}" class="fw-semibold">Create an account</a>
             </p>
         </div>
     </div>
