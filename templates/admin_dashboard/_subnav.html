@@ -1,0 +1,39 @@
+{# Admin console sub-navigation (used across admin_dashboard templates) #}
+{# Usage: {% include "admin_dashboard/_subnav.html" with active="dashboard" %} #}
+{% load static %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-2">
+        <ul class="nav nav-pills flex-nowrap overflow-auto admin-subnav" role="tablist" aria-label="Administrator console navigation">
+            <li class="nav-item">
+                <a class="nav-link {% if active == 'dashboard' %}active{% endif %}" href="{% url 'admin_dashboard:dashboard' %}">
+                    <i class="bi bi-speedometer2 me-1"></i>Overview
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active == 'users' %}active{% endif %}" href="{% url 'admin_dashboard:users' %}">
+                    <i class="bi bi-people me-1"></i>Users
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active == 'landlords' %}active{% endif %}" href="{% url 'admin_dashboard:landlords' %}">
+                    <i class="bi bi-person-vcard me-1"></i>Landlords
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active == 'apartments' %}active{% endif %}" href="{% url 'admin_dashboard:apartments' %}">
+                    <i class="bi bi-building me-1"></i>Apartments
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active == 'verifications' %}active{% endif %}" href="{% url 'admin_dashboard:verifications' %}">
+                    <i class="bi bi-patch-check me-1"></i>Verifications
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active == 'reports' %}active{% endif %}" href="{% url 'admin_dashboard:reports' %}">
+                    <i class="bi bi-graph-up me-1"></i>Reports
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

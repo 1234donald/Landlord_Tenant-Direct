@@ -1,58 +1,76 @@
 {% extends "base.html" %}
-{% block title %}User Management | Landlord-Tenant Direct Connect{% endblock %}
+
+{% block title %}User management | LT Direct{% endblock %}
+
 {% block content %}
-<div class="mb-3">
-    <a href="{% url 'admin_dashboard:dashboard' %}" class="btn btn-sm btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Dashboard
-    </a>
-    <h1 class="mt-2"><i class="bi bi-people me-2"></i>User Management</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="h3 mb-1"><i class="bi bi-people me-2" style="color:var(--lt-primary);"></i>User management</h1>
+        <p class="text-muted small mb-0">Manage all user accounts and their active status.</p>
+    </div>
 </div>
 
-<form method="get" class="mb-3 row g-2 align-items-center">
-    <div class="col-auto">
-        <select name="role" class="form-select" onchange="this.form.submit()">
-            <option value="">All roles</option>
-            {% for value, label in role_choices %}
-            <option value="{{ value }}" {% if role == value %}selected{% endif %}>
-                {{ label }}
-            </option>
-            {% endfor %}
-        </select>
-    </div>
-</form>
+{% include "admin_dashboard/_subnav.html" with active="users" %}
 
-<div class="table-responsive">
-    <table class="table table-striped align-middle">
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-auto">
+                <label class="visually-hidden" for="role-filter">Filter by role</label>
+                <select name="role" id="role-filter" class="form-select" onchange="this.form.submit()">
+                    <option value="">All roles</option>
+                    {% for value, label in role_choices %}
+                    <option value="{{ value }}" {% if role == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary">Filter</button>
+            </div>
+            {% if role %}
+            <div class="col-auto">
+                <a href="{% url 'admin_dashboard:users' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>Clear
+                </a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive admin-table">
+    <table class="table table-striped align-middle mb-0">
         <thead>
             <tr>
-                <th>Email</th>
-                <th>Full name</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Joined</th>
+                <th scope="col">Email</th>
+                <th scope="col">Full name</th>
+                <th scope="col">Role</th>
+                <th scope="col">Status</th>
+                <th scope="col">Joined</th>
             </tr>
         </thead>
         <tbody>
             {% for u in users %}
             <tr>
-                <td>{{ u.email }}</td>
+                <td class="text-break">{{ u.email }}</td>
                 <td>{{ u.full_name }}</td>
                 <td>
-                    {% if u.is_tenant %}Tenant
-                    {% elif u.is_landlord %}Landlord
-                    {% else %}Administrator{% endif %}
+                    {% if u.is_tenant %}<span class="badge text-bg-info-subtle border">Tenant</span>
+                    {% elif u.is_landlord %}<span class="badge text-bg-primary-subtle border">Landlord</span>
+                    {% else %}<span class="badge text-bg-secondary">Administrator</span>{% endif %}
                 </td>
                 <td>
                     {% if u.is_active %}
-                    <span class="badge text-bg-success">Active</span>
+                    <span class="badge text-bg-success"><i class="bi bi-check-circle me-1"></i>Active</span>
                     {% else %}
                     <span class="badge text-bg-secondary">Inactive</span>
                     {% endif %}
-                    {% if u.is_admin == False %}
+                    {% if not u.is_admin %}
                     <form method="post" action="{% url 'admin_dashboard:user-status' u.pk %}"
-                          class="d-inline d-inline-block ms-1">
+                          class="d-inline ms-1">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                {% if u.is_active %}title="Disable this account"{% else %}title="Enable this account"{% endif %}>
                             {% if u.is_active %}Disable{% else %}Enable{% endif %}
                         </button>
                     </form>
@@ -61,21 +79,33 @@
                 <td>{{ u.date_joined|date:"j M Y" }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="text-center text-muted">No users found.</td></tr>
+            <tr>
+                <td colspan="5">
+                    {% include "components/empty_state.html" with icon="bi-people" title="No users found" description="Try a different role filter." %}
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
 {% if is_paginated %}
-<nav>
-    <ul class="pagination">
+<nav class="mt-3" aria-label="User pages">
+    <ul class="pagination pagination-sm justify-content-center">
         {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if role %}&role={{ role }}{% endif %}">Previous</a></li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if role %}&role={{ role }}{% endif %}">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        </li>
         {% endif %}
         <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
         {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if role %}&role={{ role }}{% endif %}">Next</a></li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if role %}&role={{ role }}{% endif %}">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
         {% endif %}
     </ul>
 </nav>

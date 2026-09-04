@@ -1,80 +1,98 @@
 {% extends "base.html" %}
-{% block title %}Administrative Reports | Landlord-Tenant Direct Connect{% endblock %}
+
+{% block title %}Administrative reports | LT Direct{% endblock %}
+
 {% block content %}
-<div class="mb-3">
-    <a href="{% url 'admin_dashboard:dashboard' %}" class="btn btn-sm btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Dashboard
-    </a>
-    <h1 class="mt-2"><i class="bi bi-graph-up me-2"></i>Administrative Reports</h1>
-    <p class="text-muted">
-        Live management figures computed from the platform database.
-    </p>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="h3 mb-1"><i class="bi bi-graph-up me-2" style="color:var(--lt-primary);"></i>Administrative Reports</h1>
+        <p class="text-muted small mb-0">Live management figures computed from the platform database.</p>
+    </div>
 </div>
+
+{% include "admin_dashboard/_subnav.html" with active="reports" %}
 
 <div class="row g-4">
-    <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header">Users</div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body border-bottom bg-light-subtle">
+                <h2 class="h6 mb-0"><i class="bi bi-people me-2"></i>Users</h2>
+            </div>
             <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Tenants</span><span>{{ role_counts.TENANT }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Tenants</span>
+                    <span class="fw-semibold">{{ role_counts.TENANT }}</span>
                 </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Landlords</span><span>{{ role_counts.LANDLORD }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Landlords</span>
+                    <span class="fw-semibold">{{ role_counts.LANDLORD }}</span>
                 </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Administrators</span><span>{{ role_counts.ADMIN }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Administrators</span>
+                    <span class="fw-semibold">{{ role_counts.ADMIN }}</span>
                 </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Active accounts</span><span>{{ active_users }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Active accounts</span>
+                    <span class="badge text-bg-success rounded-pill">{{ active_users }}</span>
                 </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Disabled accounts</span><span>{{ inactive_users }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Disabled accounts</span>
+                    <span class="badge text-bg-secondary rounded-pill">{{ inactive_users }}</span>
                 </li>
             </ul>
         </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header">Apartments</div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100 mb-4">
+            <div class="card-body border-bottom bg-light-subtle">
+                <h2 class="h6 mb-0"><i class="bi bi-building me-2"></i>Apartments</h2>
+            </div>
             <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Total listings</span><span>{{ apartments_total }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Total listings</span>
+                    <span class="fw-semibold">{{ apartments_total }}</span>
                 </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Available</span><span>{{ apartments_available }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Available</span>
+                    <span class="badge text-bg-success rounded-pill">{{ apartments_available }}</span>
                 </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Hidden (unavailable)</span><span>{{ apartments_hidden }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Hidden (unavailable)</span>
+                    <span class="badge text-bg-secondary rounded-pill">{{ apartments_hidden }}</span>
                 </li>
             </ul>
-            <div class="card-header mt-2">Verification funnel</div>
+            <div class="card-body border-top border-bottom bg-light-subtle">
+                <h3 class="h6 mb-0 mt-2"><i class="bi bi-patch-check me-2"></i>Verification funnel</h3>
+            </div>
             <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Pending</span><span>{{ verification_counts.PENDING }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Pending</span>
+                    <span class="badge text-bg-warning rounded-pill">{{ verification_counts.PENDING }}</span>
                 </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Approved</span><span>{{ verification_counts.APPROVED }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Approved</span>
+                    <span class="badge text-bg-success rounded-pill">{{ verification_counts.APPROVED }}</span>
                 </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Rejected</span><span>{{ verification_counts.REJECTED }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Rejected</span>
+                    <span class="badge text-bg-danger rounded-pill">{{ verification_counts.REJECTED }}</span>
                 </li>
             </ul>
         </div>
-    </div>
-</div>
 
-<div class="row g-4 mt-1">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header">Messaging</div>
+        <div class="card shadow-sm border-0">
+            <div class="card-body border-bottom bg-light-subtle">
+                <h2 class="h6 mb-0"><i class="bi bi-chat-dots me-2"></i>Messaging</h2>
+            </div>
             <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Conversations</span><span>{{ conversation_count }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Conversations</span>
+                    <span class="fw-semibold">{{ conversation_count }}</span>
                 </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Messages</span><span>{{ message_count }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Messages</span>
+                    <span class="fw-semibold">{{ message_count }}</span>
                 </li>
             </ul>
         </div>
