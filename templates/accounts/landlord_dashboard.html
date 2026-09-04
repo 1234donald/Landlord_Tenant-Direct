@@ -1,89 +1,82 @@
 {% extends "base.html" %}
-{% load static %}
 
-{% block title %}Landlord dashboard - Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}Landlord dashboard | LT Direct{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-4">
-    <i class="bi bi-speedometer2 me-2"></i>Landlord dashboard
-</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h1 class="h3 mb-1">
+            <i class="bi bi-speedometer2 me-2" style="color:var(--lt-primary);"></i>Landlord dashboard
+        </h1>
+        <p class="text-muted small mb-0">
+            Welcome back, {{ request.user.get_full_name|default:request.user.email }}.
+        </p>
+    </div>
+    <a href="{{ create_url }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>New listing
+    </a>
+</div>
 
-<div class="row g-4 mb-4">
-    <div class="col-md-3">
-        <div class="card stat-card h-100">
-            <div class="card-body">
-                <h2 class="h6 text-muted">Total listings</h2>
-                <p class="fs-3 mb-0">{{ listing_count }}</p>
-            </div>
-        </div>
+{# ── Stats ── #}
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        {% include "components/stat_card.html" with icon="bi-building" label="Total listings" value=listing_count %}
     </div>
-    <div class="col-md-3">
-        <div class="card stat-card h-100">
-            <div class="card-body">
-                <h2 class="h6 text-muted">Available now</h2>
-                <p class="fs-3 mb-0">{{ available_count }}</p>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include "components/stat_card.html" with icon="bi-check2-circle" label="Available now" value=available_count %}
     </div>
-    <div class="col-md-3">
-        <div class="card stat-card h-100">
-            <div class="card-body">
-                <h2 class="h6 text-muted">Conversations</h2>
-                <p class="fs-3 mb-0">{{ conversation_count }}</p>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include "components/stat_card.html" with icon="bi-conversation" label="Conversations" value=conversation_count %}
     </div>
-    <div class="col-md-3">
-        <div class="card stat-card h-100">
-            <div class="card-body">
-                <h2 class="h6 text-muted">Unread messages</h2>
-                <p class="fs-3 mb-0">{{ unread_count }}</p>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include "components/stat_card.html" with icon="bi-envelope-dash" label="Unread messages" value=unread_count %}
     </div>
 </div>
 
 <div class="row g-4 mb-4">
+    {# ── Verification ── #}
     <div class="col-lg-5">
-        <div class="card shadow-sm">
+        <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
-                <h2 class="h5"><i class="bi bi-patch-check me-2"></i>Verification status</h2>
+                <h2 class="h5"><i class="bi bi-patch-check me-2" style="color:var(--lt-primary);"></i>Landlord verification</h2>
                 {% if verification_status == "APPROVED" %}
-                <span class="badge bg-success mb-2">Approved</span>
+                <div class="mb-2">{% include "components/status_badge.html" with verified=True %}</div>
                 <p class="text-muted small mb-0">
-                    Your account is verified. Tenants can contact you with
-                    confidence. Reviewed {{ verification.reviewed_at|date:"M d, Y" }}.
+                    Your account is verified. Tenants can contact you with confidence.
+                    Reviewed {{ verification.reviewed_at|date:"M d, Y" }}.
                 </p>
                 {% elif verification_status == "REJECTED" %}
-                <span class="badge bg-danger mb-2">Rejected</span>
+                <div class="mb-2"><span class="badge text-bg-danger"><i class="bi bi-x-octagon me-1"></i>Rejected</span></div>
                 <p class="text-muted small mb-0">
                     Your verification was not approved.
                     {% if verification.remarks %}Administrator remarks: {{ verification.remarks }}{% endif %}
                 </p>
-                <a href="{% url 'verification-form' %}" class="btn btn-outline-primary btn-sm mt-2">Submit again</a>
+                <a href="{% url 'verification-form' %}" class="btn btn-outline-primary btn-sm mt-3">Submit again</a>
                 {% elif verification_status == "PENDING" %}
-                <span class="badge bg-warning text-dark mb-2">Pending review</span>
+                <div class="mb-2"><span class="badge text-bg-warning"><i class="bi bi-hourglass me-1"></i>Pending review</span></div>
                 <p class="text-muted small mb-0">
                     Your verification is awaiting administrator review. This is an
                     administrative platform control and is not a legal verification
                     of property ownership.
                 </p>
                 {% else %}
-                <span class="badge bg-secondary mb-2">Not submitted</span>
+                <div class="mb-2"><span class="badge text-bg-secondary"><i class="bi bi-shield me-1"></i>Not submitted</span></div>
                 <p class="text-muted small mb-0">
                     Complete the landlord verification workflow so administrators can
                     review your account.
                 </p>
-                <a href="{% url 'verification-form' %}" class="btn btn-primary btn-sm mt-2">Submit verification</a>
+                <a href="{% url 'verification-form' %}" class="btn btn-primary btn-sm mt-3">Submit verification</a>
                 {% endif %}
             </div>
         </div>
     </div>
+
+    {# ── Recent listings ── #}
     <div class="col-lg-7">
-        <div class="card shadow-sm">
+        <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="h5 mb-0"><i class="bi bi-house me-2"></i>Recent listings</h2>
+                    <h2 class="h5 mb-0"><i class="bi bi-house me-2" style="color:var(--lt-primary);"></i>Recent listings</h2>
                     <a href="{{ create_url }}" class="btn btn-primary btn-sm">
                         <i class="bi bi-plus-lg me-1"></i>New listing
                     </a>
@@ -92,7 +85,7 @@
                 <ul class="list-group list-group-flush">
                     {% for apartment in recent_listings %}
                     <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <div>
+                        <div class="min-w-0">
                             <strong>{{ apartment.title }}</strong>
                             <div class="small text-muted">
                                 &#8358;{{ apartment.rental_price|floatformat:0 }}/mo &middot;
@@ -100,28 +93,29 @@
                                 {{ apartment.bedrooms }} bd / {{ apartment.bathrooms }} ba
                             </div>
                         </div>
-                        <span class="badge {% if apartment.availability %}text-bg-success{% else %}text-bg-secondary{% endif %}">
-                            {% if apartment.availability %}Available{% else %}Unavailable{% endif %}
-                        </span>
+                        <div class="d-flex align-items-center gap-2">
+                            {% include "components/status_badge.html" with available=apartment.availability %}
+                            <a href="{% url 'apartment-edit' apartment.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil-square"></i><span class="visually-hidden">Edit {{ apartment.title }}</span>
+                            </a>
+                        </div>
                     </li>
                     {% endfor %}
                 </ul>
                 <a href="{% url 'my-apartments' %}" class="btn btn-outline-primary btn-sm mt-3">Manage all listings</a>
                 {% else %}
-                <p class="text-muted small mb-0">
-                    You have not created any listings yet.
-                    <a href="{{ create_url }}">Create your first listing</a>.
-                </p>
+                {% include "components/empty_state.html" with icon="bi-house-add" title="No listings yet" description="Create your first listing so tenants can find your apartments." action_url=create_url action_text="Create listing" %}
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<div class="card shadow-sm">
+{# ── Messages ── #}
+<div class="card shadow-sm border-0">
     <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h5 mb-0"><i class="bi bi-chat-dots me-2"></i>Messages</h2>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h2 class="h5 mb-0"><i class="bi bi-chat-dots me-2" style="color:var(--lt-primary);"></i>Messages</h2>
             <a href="{% url 'landlord-messages' %}" class="btn btn-outline-primary btn-sm">Go to messages</a>
         </div>
         <p class="text-muted small mb-0 mt-2">

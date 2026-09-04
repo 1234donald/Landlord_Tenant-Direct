@@ -1,55 +1,66 @@
 {% extends "base.html" %}
 
-{% block title %}My profile - Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}My profile | LT Direct{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-8 mx-auto">
-        <h1 class="h3 mb-4">My profile</h1>
-
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h2 class="h6 text-muted mb-3">Account details</h2>
-                <dl class="row mb-0">
-                    <dt class="col-sm-3">Email</dt>
-                    <dd class="col-sm-9">{{ profile_user.email }}</dd>
-                    <dt class="col-sm-3">Role</dt>
-                    <dd class="col-sm-9">
-                        {% if profile_user.is_tenant %}Tenant{% elif profile_user.is_landlord %}Landlord{% else %}Administrator{% endif %}
-                    </dd>
-                    <dt class="col-sm-3">Status</dt>
-                    <dd class="col-sm-9">
-                        {% if profile_user.is_active %}
-                        <span class="badge bg-success">Active</span>
-                        {% else %}
-                        <span class="badge bg-danger">Inactive</span>
-                        {% endif %}
-                    </dd>
-                </dl>
-            </div>
+<div class="auth-shell" style="max-width:760px;">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="conv-avatar" style="width:56px;height:56px;font-size:1.6rem;" aria-hidden="true">
+            <i class="bi bi-person-fill"></i>
         </div>
+        <div>
+            <h1 class="h3 mb-0">My profile</h1>
+            <p class="text-muted small mb-0 text-break">{{ profile_user.email }}</p>
+        </div>
+    </div>
 
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h2 class="h6 text-muted mb-3">Update contact information</h2>
-                {% if form.non_field_errors %}
-                <div class="alert alert-danger" role="alert">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge text-bg-primary">
+                    {% if profile_user.is_tenant %}Tenant{% elif profile_user.is_landlord %}Landlord{% else %}Administrator{% endif %}
+                </span>
+                {% if profile_user.is_active %}
+                <span class="badge text-bg-success"><i class="bi bi-check-circle me-1"></i>Active</span>
+                {% else %}
+                <span class="badge text-bg-danger"><i class="bi bi-x-circle me-1"></i>Inactive</span>
                 {% endif %}
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label" for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
-                        {{ form.full_name }}
-                        {% if form.full_name.errors %}<div class="invalid-feedback d-block">{% for e in form.full_name.errors %}{{ e }}{% endfor %}</div>{% endif %}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
-                        {{ form.phone }}
-                        {% if form.phone.errors %}<div class="invalid-feedback d-block">{% for e in form.phone.errors %}{{ e }}{% endfor %}</div>{% endif %}
-                    </div>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
-                </form>
             </div>
+            <dl class="row small mb-0">
+                <dt class="col-sm-3 text-muted">Email</dt>
+                <dd class="col-sm-9 text-break">{{ profile_user.email }}</dd>
+                <dt class="col-sm-3 text-muted">Full name</dt>
+                <dd class="col-sm-9">{{ profile_user.get_full_name|default:"Not provided" }}</dd>
+                <dt class="col-sm-3 text-muted">Phone</dt>
+                <dd class="col-sm-9">{{ profile_user.phone|default:"Not provided" }}</dd>
+                <dt class="col-sm-3 text-muted">Joined</dt>
+                <dd class="col-sm-9">{{ profile_user.date_joined|date:"M d, Y" }}</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h2 class="h6 text-uppercase text-muted mb-3">Update contact information</h2>
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+            {% endif %}
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}<div class="invalid-feedback d-block">{% for e in form.full_name.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}<div class="invalid-feedback d-block">{% for e in form.phone.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check2 me-1"></i>Save changes
+                </button>
+            </form>
         </div>
     </div>
 </div>

@@ -1,61 +1,72 @@
 {% extends "base.html" %}
 
-{% block title %}Landlord verification - Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}Landlord verification | LT Direct{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-8 mx-auto">
-        <h1 class="h3 mb-1">Landlord verification</h1>
-        <p class="text-muted mb-4">
-            Submit information about your account so an administrator can review it.
-            This is an administrative platform control and is not a legal
-            verification of property ownership or land title.
-        </p>
-
-        {% if request_obj %}
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h2 class="h6 text-muted">Current status</h2>
-                {% if request_obj.is_pending %}
-                <span class="badge bg-warning text-dark">Pending review</span>
-                <p class="text-muted small mb-0 mt-2">
-                    Submitted {{ request_obj.submitted_at|date:"j M Y H:i" }}. An
-                    administrator has not reviewed it yet.
-                </p>
-                {% elif request_obj.is_approved %}
-                <span class="badge bg-success">Approved</span>
-                <p class="text-muted small mb-0 mt-2">
-                    Approved {{ request_obj.reviewed_at|date:"j M Y" }}.
-                </p>
-                {% elif request_obj.is_rejected %}
-                <span class="badge bg-danger">Rejected</span>
-                <p class="text-muted small mb-0 mt-2">
-                    {% if request_obj.remarks %}Administrator remarks: {{ request_obj.remarks }}{% else %}This request was not approved.{% endif %}
-                </p>
-                {% endif %}
-            </div>
+<div class="auth-shell" style="max-width:720px;">
+    <div class="text-center mb-4">
+        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+             style="width:64px;height:64px;border-radius:16px;background:var(--lt-primary-light);color:var(--lt-primary);font-size:1.75rem;">
+            <i class="bi bi-patch-check" aria-hidden="true"></i>
         </div>
-        {% endif %}
-
-        <form method="post" novalidate class="card shadow-sm">
-            {% csrf_token %}
-            <div class="card-body">
-                {% if form.information.errors %}
-                <div class="alert alert-danger">{% for e in form.information.errors %}{{ e }}{% endfor %}</div>
-                {% endif %}
-                <div class="mb-3">
-                    <label class="form-label" for="{{ form.information.id_for_label }}">{{ form.information.label }}</label>
-                    {{ form.information }}
-                    <div class="form-text">
-                        Provide details an administrator can review: your name,
-                        phone, and information about the apartments you list.
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    {% if request_obj %}Update and resubmit{% else %}Submit for review{% endif %}
-                </button>
-            </div>
-        </form>
+        <h1 class="h3 mb-1 fw-bold">Landlord verification</h1>
+        <p class="text-muted small mb-0 mx-auto" style="max-width:520px;">
+            Submit information about your account so an administrator can review it.
+            This is an administrative platform control and is not a legal verification
+            of property ownership or land title.
+        </p>
     </div>
+
+    {% if request_obj %}
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h2 class="h6 text-uppercase text-muted">Current status</h2>
+            <div class="mb-2">
+                {% if request_obj.is_approved %}
+                <span class="badge text-bg-success"><i class="bi bi-patch-check me-1"></i>Approved</span>
+                {% elif request_obj.is_rejected %}
+                <span class="badge text-bg-danger"><i class="bi bi-x-octagon me-1"></i>Rejected</span>
+                {% else %}
+                <span class="badge text-bg-warning"><i class="bi bi-hourglass me-1"></i>Pending review</span>
+                {% endif %}
+            </div>
+            {% if request_obj.is_approved %}
+            <p class="text-muted small mb-0">Approved {{ request_obj.reviewed_at|date:"j M Y" }}.</p>
+            {% elif request_obj.is_rejected %}
+            <p class="text-muted small mb-0">
+                {% if request_obj.remarks %}Administrator remarks: {{ request_obj.remarks }}{% else %}This request was not approved.{% endif %}
+            </p>
+            {% else %}
+            <p class="text-muted small mb-0">
+                Submitted {{ request_obj.submitted_at|date:"j M Y H:i" }}. An administrator has not reviewed it yet.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="post" novalidate class="card shadow-lg border-0" style="border-radius:var(--lt-radius-xl);">
+        {% csrf_token %}
+        <div class="card-body p-4">
+            {% if form.information.errors %}
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                {% for e in form.information.errors %}{{ e }}{% endfor %}
+            </div>
+            {% endif %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.information.id_for_label }}">{{ form.information.label }}</label>
+                {{ form.information }}
+                <div class="form-text">
+                    Provide details an administrator can review: your name, phone, and
+                    information about the apartments you list.
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                <i class="bi bi-check2-circle me-1"></i>
+                {% if request_obj %}Update and resubmit{% else %}Submit for review{% endif %}
+            </button>
+        </div>
+    </form>
 </div>
 {% endblock %}
