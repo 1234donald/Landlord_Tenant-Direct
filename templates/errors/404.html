@@ -1,10 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Page not found | Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}Page not found | LT Direct{% endblock %}
 {% block content %}
 <div class="text-center py-5">
-    <h1 class="display-4">404</h1>
-    <p class="lead">The page you were looking for could not be found.</p>
-    <p class="text-muted">It may have been moved, or the address may be incorrect.</p>
-    <a href="{% url 'home' %}" class="btn btn-primary mt-3">Return home</a>
+    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+         style="width:80px;height:80px;border-radius:20px;background:var(--lt-primary-light);color:var(--lt-primary);font-size:2rem;">
+        <i class="bi bi-emoji-frown" aria-hidden="true"></i>
+    </div>
+    <h1 class="display-4 fw-bold">404</h1>
+    <p class="lead mb-2">The page you were looking for could not be found.</p>
+    <p class="text-muted mb-4">It may have been moved, or the address may be incorrect.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary px-4">
+        <i class="bi bi-house me-1"></i>Return home
+    </a>
 </div>
 {% endblock %}

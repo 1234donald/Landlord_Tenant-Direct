@@ -1,71 +1,315 @@
 {% extends "base.html" %}
 
-{% block title %}Home | Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}Home | LT Direct — Find the right home, connect directly with the landlord{% endblock %}
 
 {% block content %}
-<section class="hero rounded-3 p-5 mb-4 text-center">
-    <h1 class="display-5 fw-bold mb-3">Direct Landlord–Tenant Contact</h1>
-    <p class="lead mx-auto mb-4 hero-subtitle">
-        An online platform connecting prospective tenants directly with landlords.
-        Search available apartments, save your preferences and receive personalised
-        recommendations powered by Weighted K-Nearest Neighbour (Weighted KNN).
-    </p>
-    <div class="d-flex gap-2 justify-content-center flex-wrap">
-        <a href="{% url 'apartment-list' %}" class="btn btn-light btn-lg">Browse apartments</a>
-        {% if not user.is_authenticated %}
-        <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg">Create an account</a>
-        {% elif user.is_tenant %}
-        <a href="{% url 'edit-preference' %}" class="btn btn-outline-light btn-lg">Set your preferences</a>
-        {% elif user.is_landlord %}
-        <a href="{% url 'apartment-create' %}" class="btn btn-outline-light btn-lg">List an apartment</a>
-        {% endif %}
+{# ── Hero section with primary search ── #}
+<section class="hero mb-5">
+    <div class="text-center">
+        <h1 class="display-4 fw-bold mb-3">Find the right home.<br>Connect directly with the landlord.</h1>
+        <p class="lead hero-subtitle mx-auto mb-4">
+            Browse available apartments, save your preferences and receive
+            personalised recommendations powered by Weighted K-Nearest
+            Neighbour (Weighted KNN) — then message the landlord directly.
+        </p>
+
+        <form method="get" action="{% url 'apartment-list' %}" class="hero-search" role="search" aria-label="Search apartments">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-geo-alt"></i></span>
+                        <input type="text" name="location" class="form-control"
+                               placeholder="Location (e.g. Calabar)" aria-label="Location">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="apartment_type" class="form-select" aria-label="Apartment type">
+                        <option value="">Apartment type</option>
+                        {% for value, label in apartment_types %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" name="max_price" class="form-control"
+                           placeholder="Max rent (₦)" aria-label="Maximum rent">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn w-100">
+                        <i class="bi bi-search me-1"></i>Search
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div class="mt-3 small" style="color:rgba(255,255,255,.85);">
+            <i class="bi bi-building me-1"></i>{{ total_available }} available listing{{ total_available|pluralize }} —
+            direct landlord contact, no middlemen.
+        </div>
     </div>
 </section>
 
-<section class="row g-4 mb-4">
-    <div class="col-md-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-search display-6 text-primary"></i>
-                <h2 class="h5 mt-3">Search &amp; filter</h2>
-                <p class="text-muted mb-0">
-                    Browse available apartments by location, type, price, bedrooms,
+{# ── Stats strip ── #}
+<section class="row g-3 text-center mb-5 section-py" style="padding-top:0;background:transparent;" aria-label="Platform highlights">
+    <div class="col-6 col-md-3">
+        <div class="benefit-card">
+            <div class="fs-2 fw-bold" style="color:var(--lt-primary);">{{ total_available }}</div>
+            <div class="small text-muted">Available listings</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="benefit-card">
+            <div class="fs-2 fw-bold" style="color:var(--lt-primary);">Direct</div>
+            <div class="small text-muted">Landlord contact</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="benefit-card">
+            <div class="fs-2 fw-bold" style="color:var(--lt-primary);">Weighted KNN</div>
+            <div class="small text-muted">Ranked matches</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="benefit-card">
+            <div class="fs-2 fw-bold" style="color:var(--lt-primary);"><i class="bi bi-shield-check"></i></div>
+            <div class="small text-muted">Verified listings</div>
+        </div>
+    </div>
+</section>
+
+{# ── Featured apartments ── #}
+{% if featured_apartments %}
+<section class="section-py">
+    <div class="text-center mb-4">
+        <h2 class="section-title">Featured apartments</h2>
+        <p class="section-subtitle">Recently updated listings across the platform.</p>
+    </div>
+    <div class="row g-4">
+        {% for apartment in featured_apartments %}
+        <div class="col-sm-6 col-lg-4">
+            {% include "components/apartment_card.html" with apartment=apartment %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+        <a href="{% url 'apartment-list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-grid me-1"></i>Browse all apartments
+        </a>
+    </div>
+</section>
+{% endif %}
+
+{# ── How the platform works ── #}
+<section class="section-py">
+    <div class="text-center mb-4">
+        <h2 class="section-title">How it works</h2>
+        <p class="section-subtitle">A simple, direct way to find and rent your next home.</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="benefit-card step-card">
+                <div class="step-number">1</div>
+                <h3 class="h5">Search &amp; filter</h3>
+                <p class="text-muted mb-0 small">
+                    Browse apartments by location, type, price, bedrooms,
                     bathrooms and facilities.
                 </p>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-stars display-6 text-primary"></i>
-                <h2 class="h5 mt-3">Personalised recommendations</h2>
-                <p class="text-muted mb-0">
-                    Save your preferences and let the Weighted KNN recommender rank
+        <div class="col-md-4">
+            <div class="benefit-card step-card">
+                <div class="step-number">2</div>
+                <h3 class="h5">Get recommendations</h3>
+                <p class="text-muted mb-0 small">
+                    Save your preferences and the Weighted KNN recommender ranks
                     the closest matches for you.
                 </p>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-chat-dots display-6 text-primary"></i>
-                <h2 class="h5 mt-3">Contact landlords directly</h2>
-                <p class="text-muted mb-0">
-                    Message the owner of a listing you like without intermediaries.
+        <div class="col-md-4">
+            <div class="benefit-card step-card">
+                <div class="step-number">3</div>
+                <h3 class="h5">Contact the landlord</h3>
+                <p class="text-muted mb-0 small">
+                    Message the owner of a listing you like directly, without
+                    intermediaries.
                 </p>
             </div>
         </div>
     </div>
 </section>
 
-<section class="alert alert-light border shadow-sm">
-    <h2 class="h5"><i class="bi bi-shield-check me-2"></i>Landlord verification</h2>
-    <p class="mb-0 text-muted">
-        Landlords complete an administrative verification workflow before their
-        account is reviewed. This is a platform control and is not a legal
-        verification of property ownership.
-    </p>
+{# ── Tenants ── #}
+<section class="section-py" style="background:var(--lt-surface);border-radius:var(--lt-radius-xl);border:1px solid var(--lt-border);">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-6">
+            <h2 class="section-title mb-3">For prospective tenants</h2>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Search &amp; filter apartments that match your needs</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Save your preferences once and get personalised recommendations</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>View structured apartment information and photos</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Message landlords directly to arrange viewings</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Understand availability before you contact anyone</li>
+            </ul>
+            <a href="{% url 'register' %}" class="btn btn-primary mt-2">Create a tenant account</a>
+        </div>
+        <div class="col-lg-5 offset-lg-1">
+            <div class="benefit-card text-start">
+                <div class="benefit-icon benefit-icon-primary"><i class="bi bi-search"></i></div>
+                <h3 class="h5">Search-first experience</h3>
+                <p class="text-muted small mb-0">
+                    Start from a simple search bar and narrow results down with
+                    powerful filters — then let Weighted KNN surface the closest
+                    matches to your stated preferences.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Landlords ── #}
+<section class="section-py">
+    <div class="row align-items-center g-4 flex-md-row-reverse">
+        <div class="col-lg-6">
+            <h2 class="section-title mb-3">For landlords</h2>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Register and complete an administrative verification workflow</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Create and manage apartment listings with photos</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Control availability of your properties</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Receive and respond to tenant inquiries directly</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Present structured, trustworthy property information</li>
+            </ul>
+            <a href="{% url 'register' %}" class="btn btn-primary mt-2">List your property</a>
+        </div>
+        <div class="col-lg-5 offset-lg-1">
+            <div class="benefit-card text-start">
+                <div class="benefit-icon benefit-icon-accent"><i class="bi bi-building"></i></div>
+                <h3 class="h5">Reach tenants directly</h3>
+                <p class="text-muted small mb-0">
+                    List your apartments once and connect with prospective
+                    tenants without going through third-party agents.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Verification / trust ── #}
+<section class="section-py">
+    <div class="trust-section p-4 p-md-5">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-3 text-center">
+                <div class="benefit-icon benefit-icon-success" style="width:80px;height:80px;font-size:2rem;">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <h2 class="section-title mb-2">Landlord verification</h2>
+                <p class="mb-2">
+                    Landlords complete an <strong>administrative verification workflow</strong>
+                    before their account is placed under review by an administrator.
+                    Approved landlords are clearly identified across the platform.
+                </p>
+                <p class="small mb-0 text-muted">
+                    <i class="bi bi-info-circle me-1"></i>Verification is a platform control.
+                    It does not constitute legal verification of property ownership.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Intelligent recommendations explainer ── #}
+<section class="section-py">
+    <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+            <h2 class="section-title mb-3">Intelligent recommendations</h2>
+            <p class="text-muted mb-3">
+                The platform uses <strong>Weighted K-Nearest Neighbour (Weighted KNN)</strong>
+                to rank apartments by how closely they match your stated preferences.
+            </p>
+            <ul class="list-unstyled small">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Your preferences form a <em>query vector</em></li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Apartments are compared using a weighted distance</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Closest matches are ranked highest for you</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Hard constraints (e.g. maximum rent) are always respected</li>
+            </ul>
+            <p class="small text-muted">
+                Results are <em>similarity-based</em> recommendations — not guarantees.
+                They reflect available structured data and your stated preferences.
+            </p>
+        </div>
+        <div class="col-lg-5 offset-lg-1">
+            <div class="benefit-card text-start">
+                <div class="benefit-icon benefit-icon-primary"><i class="bi bi-stars"></i></div>
+                <h3 class="h5">Personalised matching, not guesswork</h3>
+                <p class="text-muted small mb-0">
+                    Save your preferences and let the recommender surface the
+                    closest matches — clearly labelled as "Recommended for you" —
+                    so you can focus on the most relevant listings.
+                </p>
+                {% if user.is_authenticated and user.is_tenant %}
+                <a href="{% url 'edit-preference' %}" class="btn btn-primary mt-3">Set your preferences</a>
+                {% elif not user.is_authenticated %}
+                <a href="{% url 'register' %}" class="btn btn-primary mt-3">Get started</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Direct communication explainer ── #}
+<section class="section-py">
+    <div class="row align-items-center g-5 flex-md-row-reverse">
+        <div class="col-lg-6">
+            <h2 class="section-title mb-3">Direct landlord–tenant communication</h2>
+            <p class="text-muted mb-3">
+                No intermediaries, no middlemen. Connect directly with the person
+                listing the apartment you are interested in.
+            </p>
+            <ul class="list-unstyled small">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Conversation history within the platform</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Timestamps and read status on every message</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Contact landlords straight from any listing</li>
+            </ul>
+            <a href="{% url 'apartment-list' %}" class="btn btn-outline-primary mt-2">
+                <i class="bi bi-chat-dots me-1"></i>Start browsing
+            </a>
+        </div>
+        <div class="col-lg-5 offset-lg-1">
+            <div class="benefit-card text-start">
+                <div class="benefit-icon benefit-icon-success"><i class="bi bi-chat-dots"></i></div>
+                <h3 class="h5">Stay in the loop</h3>
+                <p class="text-muted small mb-0">
+                    Every inquiry and reply is kept in one organised thread,
+                    so you never lose track of a conversation.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Call to action ── #}
+<section class="section-py">
+    <div class="cta-section">
+        <h2 class="mb-3">Ready to find your next home?</h2>
+        <p class="mb-4">
+            Join the platform today to search listings or list your property.
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            {% if not user.is_authenticated %}
+            <a href="{% url 'register' %}" class="btn btn-light btn-lg">Create an account</a>
+            <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">Log in</a>
+            {% elif user.is_tenant %}
+            <a href="{% url 'apartment-list' %}" class="btn btn-light btn-lg">Browse apartments</a>
+            <a href="{% url 'edit-preference' %}" class="btn btn-outline-light btn-lg">Set preferences</a>
+            {% elif user.is_landlord %}
+            <a href="{% url 'apartment-create' %}" class="btn btn-light btn-lg">List an apartment</a>
+            <a href="{% url 'my-apartments' %}" class="btn btn-outline-light btn-lg">Manage listings</a>
+            {% elif user.is_admin %}
+            <a href="{% url 'admin_dashboard:dashboard' %}" class="btn btn-light btn-lg">Admin dashboard</a>
+            {% endif %}
+        </div>
+    </div>
 </section>
 {% endblock %}

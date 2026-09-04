@@ -1,11 +1,33 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
 
+from apps.apartments.models import Apartment
+from apps.apartments.views import build_search_queryset
+
 
 class HomeView(TemplateView):
-    """Home page for the platform foundation."""
+    """Home page for the platform foundation.
+
+    Passes featured (recently updated, available) apartments to the template so
+    the homepage can show a "Featured listings" section, plus the apartment
+    types for the primary search bar.
+    """
 
     template_name = "home.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        featured = (
+            Apartment.objects.filter(availability=True)
+            .prefetch_related("images")
+            .order_by("-updated_at")[:6]
+        )
+        context["featured_apartments"] = featured
+        context["apartment_types"] = Apartment.ApartmentType.choices
+        context["total_available"] = Apartment.objects.filter(
+            availability=True
+        ).count()
+        return context
 
 
 class AboutView(TemplateView):

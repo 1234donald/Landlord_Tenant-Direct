@@ -1,30 +1,46 @@
 {% extends "base.html" %}
-{% block title %}About | Landlord-Tenant Direct Connect{% endblock %}
+{% block title %}About | LT Direct{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-                <h1 class="card-title h3">About the Platform</h1>
-                <p>
-                    The <strong>Landlord-Tenant Direct Connect Platform</strong> is an
-                    academic web application designed to facilitate direct contact between
-                    landlords and prospective tenants.
-                </p>
-                <p>Key objectives:</p>
-                <ul>
-                    <li>Allow tenants to search for and filter residential apartments.</li>
-                    <li>Allow landlords to register and manage apartment listings.</li>
-                    <li>Provide tenant apartment preferences and personalised recommendations
-                        using <strong>Weighted K-Nearest Neighbour (Weighted KNN)</strong>.</li>
-                    <li>Enable direct landlord–tenant messaging.</li>
-                    <li>Support an administrative landlord-verification workflow.</li>
-                </ul>
-                <p class="mb-0 small text-muted">
-                    This is an academic prototype. It does not legally verify property
-                    ownership, process payments, or act as a legal authority.
-                </p>
-            </div>
+<div class="auth-shell" style="max-width:820px;">
+    <div class="text-center mb-4">
+        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+             style="width:64px;height:64px;border-radius:16px;background:var(--lt-primary-light);color:var(--lt-primary);font-size:1.75rem;">
+            <i class="bi bi-building" aria-hidden="true"></i>
+        </div>
+        <h1 class="h3 mb-1 fw-bold">About the platform</h1>
+        <p class="text-muted small mb-0">
+            Landlord-Tenant Direct Connect (LT Direct)
+        </p>
+    </div>
+
+    <div class="card shadow-sm border-0" style="border-radius:var(--lt-radius-xl);">
+        <div class="card-body p-4 p-lg-5">
+            <p>
+                The <strong>Landlord-Tenant Direct Connect Platform</strong> is an
+                academic web application designed to facilitate direct contact between
+                landlords and prospective tenants.
+            </p>
+            <h2 class="h5 mt-4">Key objectives</h2>
+            <ul class="mb-4">
+                <li>Allow tenants to search for and filter residential apartments.</li>
+                <li>Allow landlords to register and manage apartment listings.</li>
+                <li>Provide tenant apartment preferences and personalised recommendations
+                    using <strong>Weighted K-Nearest Neighbour (Weighted KNN)</strong>.</li>
+                <li>Enable direct landlord&ndash;tenant messaging.</li>
+                <li>Support an administrative landlord-verification workflow.</li>
+            </ul>
+            <h2 class="h5">How recommendations work</h2>
+            <p class="small text-muted">
+                Your preferences form a query vector, and each apartment becomes a
+                candidate vector. The system ranks apartments by a weighted Euclidean
+                distance &mdash; a smaller distance means a stronger match. This is a
+                similarity-based ranking, not a guarantee.
+            </p>
+            <hr>
+            <p class="mb-0 small text-muted">
+                This is an academic prototype. It does not legally verify property
+                ownership, process payments, or act as a legal authority.
+            </p>
         </div>
     </div>
 </div>
