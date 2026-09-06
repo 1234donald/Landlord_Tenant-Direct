@@ -88,6 +88,25 @@ with the same variables declared in `.env.example`. Do **not** reuse the local
 10. Obtain/enable a TLS certificate (e.g. Let's Encrypt / certbot) and rely on
     the HTTPS redirect in `nginx.conf` plus `SECURE_SSL_REDIRECT` in Django.
 
+## Render (PaaS without a shell)
+
+On platforms such as Render there is no persistent shell to run management
+commands. Migrations and the administrator bootstrap must run as part of the
+start command, which executes on every boot:
+
+```
+web: python manage.py migrate --noinput && python manage.py create_admin && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+```
+
+This is committed in the repository root `Procfile`. If you override the Start
+Command in the Render dashboard, use the same chain.
+
+- `migrate --noinput` is idempotent and safe on every boot.
+- `create_admin` (apps/core/management/commands/create_admin.py) creates or
+  promotes the administrator account from `ADMIN_EMAIL`, `ADMIN_PASSWORD` and
+  optional `ADMIN_FULL_NAME` environment variables. It is a no-op when
+  `ADMIN_EMAIL` is unset, so booting never fails without it.
+
 ## 4. Database backups
 
 Schedule regular PostgreSQL backups. Example using `pg_dump`:
