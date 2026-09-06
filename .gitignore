@@ -48,6 +48,7 @@ coverage.xml
 
 # --- Django ---
 *.log
+.runserver.pid
 logs/
 staticfiles/
 media/
