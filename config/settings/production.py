@@ -64,7 +64,7 @@ MIDDLEWARE.insert(0, "whitenoise.middleware.WhiteNoiseMiddleware")  # noqa: F405
 # production), otherwise fall back to local file system (self-hosted).
 _media_backend = "django.core.files.storage.FileSystemStorage"
 if env("CLOUDINARY_URL"):
-    _media_backend = "cloudinary_storage.storage.CloudinaryMediaStorage"
+    _media_backend = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 STORAGES = {
     "default": {

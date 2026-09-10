@@ -95,7 +95,7 @@ Render Managed PostgreSQL
 | Environment variables | NEEDS CONFIGURATION | Must set SECRET_KEY, DEBUG, ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS, DATABASE_URL, CLOUDINARY_URL in Render dashboard. |
 | Build/start commands | **RESOLVED** | `Procfile` created: `web: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`. |
 | PostgreSQL connection format | **RESOLVED** | `DATABASE_URL` parsed via `urllib.parse` in `production.py`. Falls back to individual `DATABASE_*` vars when not set. |
-| Persistent file storage | **RESOLVED** | `cloudinary==1.46.2` + `django-cloudinary-storage==0.3.0` added. `CLOUDINARY_URL` env var selects `CloudinaryMediaStorage`; absent falls back to local `FileSystemStorage`. |
+| Persistent file storage | **RESOLVED** | `cloudinary==1.46.2` + `django-cloudinary-storage==0.3.0` added. `CLOUDINARY_URL` env var selects `MediaCloudinaryStorage`; absent falls back to local `FileSystemStorage`. |
 
 ---
 
@@ -216,7 +216,7 @@ Render Managed PostgreSQL
 | MEDIA_URL configured | READY | `MEDIA_URL = "media/"` in `base.py:163`. |
 | MEDIA_ROOT configured | READY | `MEDIA_ROOT = BASE_DIR / "media"` in `base.py:164`. |
 | Media served in dev | READY | `static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)` in `urls.py:138` (DEBUG only). |
-| Media in production | **RESOLVED** | `cloudinary==1.46.2` + `django-cloudinary-storage==0.3.0` configured in `requirements.txt` and `production.py`. When `CLOUDINARY_URL` env var is set, `CloudinaryMediaStorage` is used. When absent, falls back to `FileSystemStorage` (local dev). |
+| Media in production | **RESOLVED** | `cloudinary==1.46.2` + `django-cloudinary-storage==0.3.0` configured in `requirements.txt` and `production.py`. When `CLOUDINARY_URL` env var is set, `MediaCloudinaryStorage` is used. When absent, falls back to `FileSystemStorage` (local dev). |
 | Upload validation | READY | File type, 5 MB size, Pillow content verification — all enforced. |
 | Git-ignored media | READY | `media/` is in `.gitignore:53`. |
 
@@ -553,7 +553,7 @@ If a migration fails on Render:
 | Upload validation | Type, 5MB size, Pillow content check | Works as-is |
 | Serving (dev) | Django dev server via `static()` | Only when `DEBUG=True` |
 | Serving (prod) | Nginx alias in `deploy/nginx.conf` | Not applicable on Render |
-| **Production solution** | **RESOLVED** — Cloudinary via `django-cloudinary-storage` | `CLOUDINARY_URL` env var selects `CloudinaryMediaStorage`; falls back to local filesystem when unset |
+| **Production solution** | **RESOLVED** — Cloudinary via `django-cloudinary-storage` | `CLOUDINARY_URL` env var selects `MediaCloudinaryStorage`; falls back to local filesystem when unset |
 
 ---
 
@@ -732,7 +732,7 @@ python -m pytest tests/integration/test_deployment_readiness.py
 |---|---|---|---|---|
 | 1 | No Procfile / start command | CRITICAL | Created `Procfile` with `web: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT` | **RESOLVED** |
 | 2 | DATABASE_URL not parsed | CRITICAL | Added `urllib.parse` parsing in `production.py` (no new dependency). Falls back to individual `DATABASE_*` vars. | **RESOLVED** |
-| 3 | Ephemeral media storage | HIGH | Added `cloudinary==1.46.2` + `django-cloudinary-storage==0.3.0`. `CLOUDINARY_URL` env var selects `CloudinaryMediaStorage`. | **RESOLVED** |
+| 3 | Ephemeral media storage | HIGH | Added `cloudinary==1.46.2` + `django-cloudinary-storage==0.3.0`. `CLOUDINARY_URL` env var selects `MediaCloudinaryStorage`. | **RESOLVED** |
 
 ### 12.2 Configuration Requirements Summary
 
