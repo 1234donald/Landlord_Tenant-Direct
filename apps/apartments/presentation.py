@@ -10,6 +10,7 @@ in ``apps.apartments.views``.
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
@@ -93,6 +94,18 @@ class ApartmentForm(forms.ModelForm):
         if value is not None and value <= 0:
             raise forms.ValidationError("Bathroom count must be at least 1.")
         return value
+
+
+def _get_managed_apartment(request, pk):
+    """Fetch an apartment the current user is allowed to manage (AGENTS 8).
+
+    Only the owning landlord or an administrator may manage a listing; any
+    other user gets a 403. Raises 404 when the listing does not exist.
+    """
+    apartment = get_object_or_404(Apartment, pk=pk)
+    if not (request.user.is_admin or apartment.landlord_id == request.user.id):
+        raise PermissionDenied
+    return apartment
 
 
 def _store_images(apartment, files):
@@ -281,14 +294,7 @@ class ApartmentEditView(LoginRequiredMixin, LandlordOnlyMixin, View):
         return response
 
     def get_apartment(self, request, pk):
-        apartment = get_object_or_404(Apartment, pk=pk)
-        if not (request.user.is_admin or apartment.landlord_id == request.user.id):
-            # Only the owning landlord (or an administrator) may manage a
-            # listing; other authenticated users get a 403 (AGENTS 8).
-            from django.http import HttpResponseForbidden
-
-            raise HttpResponseForbidden("Forbidden")
-        return apartment
+        return _get_managed_apartment(request, pk)
 
     def get(self, request, pk):
         apartment = self.get_apartment(request, pk)
@@ -313,3 +319,18 @@ class ApartmentEditView(LoginRequiredMixin, LandlordOnlyMixin, View):
             {"form": form, "apartment": apartment, "is_edit": True},
             status=400,
         )
+
+
+class ApartmentDeleteView(LoginRequiredMixin, LandlordOnlyMixin, View):
+    """Landlord-only action for deleting one of the landlord's own listings.
+
+    POST-only; the listing is removed together with its uploaded images
+    (database cascade). Only the owning landlord or an administrator may delete
+    a listing (AGENTS 8); other routes that manage listings use this same check.
+    """
+
+    def post(self, request, pk):
+        apartment = _get_managed_apartment(request, pk)
+        apartment.delete()
+        messages.success(request, "Your apartment listing was deleted.")
+        return redirect("my-apartments")

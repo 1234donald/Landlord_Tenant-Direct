@@ -64,6 +64,10 @@ class ApartmentPresentationUrlTests(TestCase):
         match = resolve("/my/apartments/")
         self.assertEqual(match.url_name, "my-apartments")
 
+    def test_apartment_delete_url_resolves(self):
+        match = resolve("/landlord/apartments/5/delete/")
+        self.assertEqual(match.url_name, "apartment-delete")
+
 
 class ApartmentBrowseListTests(TestCase):
     def setUp(self):
@@ -247,3 +251,100 @@ class MyApartmentsPageTests(TestCase):
         content = response.content.decode()
         self.assertIn("Listing A", content)
         self.assertIn("Listing B", content)
+
+
+class ApartmentDeleteViewTests(TestCase):
+    """POST-only deletion of a landlord's own listing (AGENTS 8)."""
+
+    def setUp(self):
+        self.client = Client(HTTP_HOST="localhost")
+        self.landlord = User.objects.create_user(
+            email="landlord@example.com",
+            password="StrongPass123!",
+            full_name="Landlord User",
+            role=User.Role.LANDLORD,
+        )
+        self.other_landlord = User.objects.create_user(
+            email="other@example.com",
+            password="StrongPass123!",
+            full_name="Other Landlord",
+            role=User.Role.LANDLORD,
+        )
+        self.tenant = User.objects.create_user(
+            email="tenant@example.com",
+            password="StrongPass123!",
+            full_name="Tenant User",
+            role=User.Role.TENANT,
+        )
+        self.admin = User.objects.create_user(
+            email="admin@example.com",
+            password="StrongPass123!",
+            full_name="Admin User",
+            role=User.Role.ADMIN,
+        )
+        self.apartment = make_apartment(self.landlord, title="To Delete")
+        self.other_apartment = make_apartment(self.other_landlord, title="Keep Mine")
+
+    def test_anonymous_post_redirects_to_login(self):
+        response = self.client.post(
+            reverse("apartment-delete", args=[self.apartment.pk])
+        )
+        self.assertIn(response.status_code, (301, 302))
+        self.assertTrue(Apartment.objects.filter(pk=self.apartment.pk).exists())
+
+    def test_get_method_not_allowed(self):
+        self.client.force_login(self.landlord)
+        response = self.client.get(
+            reverse("apartment-delete", args=[self.apartment.pk])
+        )
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(Apartment.objects.filter(pk=self.apartment.pk).exists())
+
+    def test_tenant_cannot_delete(self):
+        self.client.force_login(self.tenant)
+        response = self.client.post(
+            reverse("apartment-delete", args=[self.apartment.pk])
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(Apartment.objects.filter(pk=self.apartment.pk).exists())
+
+    def test_landlord_deletes_own_listing(self):
+        self.client.force_login(self.landlord)
+        response = self.client.post(
+            reverse("apartment-delete", args=[self.apartment.pk])
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Apartment.objects.filter(pk=self.apartment.pk).exists())
+        self.assertFalse(
+            Apartment.objects.filter(landlord=self.landlord).exists()
+        )
+
+    def test_delete_cascades_images(self):
+        ApartmentImage.objects.create(
+            apartment=self.apartment,
+            image=make_image_bytes("photo.png"),
+            order=0,
+        )
+        self.client.force_login(self.landlord)
+        self.client.post(reverse("apartment-delete", args=[self.apartment.pk]))
+        self.assertFalse(
+            ApartmentImage.objects.filter(apartment=self.apartment).exists()
+        )
+
+    def test_landlord_cannot_delete_another_landlords_listing(self):
+        self.client.force_login(self.landlord)
+        response = self.client.post(
+            reverse("apartment-delete", args=[self.other_apartment.pk])
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(
+            Apartment.objects.filter(pk=self.other_apartment.pk).exists()
+        )
+
+    def test_admin_can_delete(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            reverse("apartment-delete", args=[self.apartment.pk])
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Apartment.objects.filter(pk=self.apartment.pk).exists())

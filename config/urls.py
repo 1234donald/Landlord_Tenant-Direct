@@ -23,6 +23,7 @@ from apps.accounts.presentation import (
 from apps.apartments.presentation import (
     ApartmentBrowseView,
     ApartmentCreateView,
+    ApartmentDeleteView,
     ApartmentDetailPageView,
     ApartmentEditView,
     MyApartmentsView,
@@ -110,6 +111,11 @@ urlpatterns = [
         "landlord/apartments/<int:pk>/edit/",
         ApartmentEditView.as_view(),
         name="apartment-edit",
+    ),
+    path(
+        "landlord/apartments/<int:pk>/delete/",
+        ApartmentDeleteView.as_view(),
+        name="apartment-delete",
     ),
     path("about/", AboutView.as_view(), name="about"),
     path("my/apartments/", MyApartmentsView.as_view(), name="my-apartments"),
