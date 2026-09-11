@@ -1,3 +1,11 @@
+# --- Internal project spec documents (kept locally, not tracked) ---
+AGENTS.md
+CHAPTER THREE.md
+FRONTEND_REQUIREMENTS.md
+PRODUCTION_DEPLOYMENT_READINESS.md
+PROJECT_COMPLIANCE_AUDIT.md
+TECH_STACK_AND_IMPLEMENTATION_PLAN.md
+
 # --- Secrets and environment ---
 .env
 .env.local
