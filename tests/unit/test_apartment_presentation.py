@@ -27,6 +27,14 @@ def make_image_bytes(name="photo.png", size=(32, 32), color=(255, 0, 0)):
     return SimpleUploadedFile(name, buffer.read(), content_type="image/png")
 
 
+def make_video_bytes(name="tour.mp4"):
+    return SimpleUploadedFile(
+        name,
+        b"\x00\x00\x00\x20ftypmp42" + b"\x00" * (4096 - 12),
+        content_type="video/mp4",
+    )
+
+
 def make_apartment(landlord, **kwargs):
     defaults = {
         "title": "Sunny 2-Bedroom Flat",
@@ -214,6 +222,58 @@ class ApartmentDetailPageTests(TestCase):
     def test_detail_missing_apartment_returns_404(self):
         response = self.client.get(reverse("apartment-detail", args=[99999]))
         self.assertEqual(response.status_code, 404)
+
+    def test_detail_renders_video_player_when_video_exists(self):
+        apartment = make_apartment(self.landlord)
+        apartment.video = make_video_bytes()
+        apartment.save()
+        response = self.client.get(reverse("apartment-detail", args=[apartment.pk]))
+        content = response.content.decode()
+        self.assertIn("<video", content)
+        self.assertIn("controls", content)
+
+    def test_detail_no_video_player_when_no_video(self):
+        apartment = make_apartment(self.landlord)
+        response = self.client.get(reverse("apartment-detail", args=[apartment.pk]))
+        content = response.content.decode()
+        self.assertNotIn("<video", content)
+
+
+class ApartmentFormVideoTests(TestCase):
+    """Video validation on the presentation-layer ApartmentForm."""
+
+    def setUp(self):
+        self.client = Client(HTTP_HOST="localhost")
+        self.landlord = User.objects.create_user(
+            email="landlord@example.com",
+            password="StrongPass123!",
+            full_name="Landlord User",
+            role=User.Role.LANDLORD,
+        )
+
+    def test_form_saves_video_to_apartment(self):
+        self.client.force_login(self.landlord)
+        apartment = make_apartment(self.landlord)
+        from apps.apartments.presentation import ApartmentForm
+        form = ApartmentForm(
+            data={"title": "Has Video", "location": "Calabar", "apartment_type": "TWO_BEDROOM",
+                  "rental_price": "100000.00", "bedrooms": 2, "bathrooms": 2},
+            files={"video": make_video_bytes()},
+            instance=apartment,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        saved = form.save()
+        self.assertTrue(saved.video.name.endswith(".mp4"))
+
+    def test_form_rejects_invalid_video(self):
+        from apps.apartments.presentation import ApartmentForm
+        form = ApartmentForm(
+            data={"title": "Bad Video", "location": "Calabar", "apartment_type": "TWO_BEDROOM",
+                  "rental_price": "100000.00", "bedrooms": 2, "bathrooms": 2},
+            files={"video": SimpleUploadedFile("tour.mp4", b"not a video", content_type="video/mp4")},
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("video", form.errors)
 
 
 class MyApartmentsPageTests(TestCase):

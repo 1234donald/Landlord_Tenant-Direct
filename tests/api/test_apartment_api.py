@@ -30,6 +30,15 @@ def make_image_bytes(name="photo.png", size=(32, 32), color=(255, 0, 0)):
     return SimpleUploadedFile(name, buffer.read(), content_type="image/png")
 
 
+def make_video_bytes(name="tour.mp4"):
+    # Minimal MP4 signature: bytes 4-7 hold the "ftyp" brand.
+    return SimpleUploadedFile(
+        name,
+        b"\x00\x00\x00\x20ftypmp42" + b"\x00" * (4096 - 12),
+        content_type="video/mp4",
+    )
+
+
 def make_landlord(email="landlord@example.com"):
     return User.objects.create_user(
         email=email,
@@ -267,3 +276,68 @@ class ApartmentCreateApiTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["data"]["images"], [])
+
+    def test_landlord_can_create_apartment_with_video(self):
+        self._auth_as(self.landlord)
+        data = valid_payload()
+        data["video"] = make_video_bytes()
+        response = self.client.post(
+            APARTMENTS_URL,
+            data,
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        apartment = Apartment.objects.get(pk=response.data["data"]["id"])
+        self.assertTrue(apartment.video.name.endswith(".mp4"))
+
+    def test_creation_rejects_unsupported_video_type(self):
+        self._auth_as(self.landlord)
+        bad = SimpleUploadedFile(
+            "tour.avi",
+            b"\x00\x00\x00\x20ftypmp42" + b"\x00" * 1024,
+            content_type="video/x-msvideo",
+        )
+        data = valid_payload()
+        data["video"] = bad
+        response = self.client.post(
+            APARTMENTS_URL,
+            data,
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("video", response.data["errors"])
+        self.assertEqual(Apartment.objects.count(), 0)
+
+    def test_creation_rejects_fake_video_content(self):
+        self._auth_as(self.landlord)
+        bad = SimpleUploadedFile(
+            "tour.mp4", b"not really a video", content_type="video/mp4"
+        )
+        data = valid_payload()
+        data["video"] = bad
+        response = self.client.post(
+            APARTMENTS_URL,
+            data,
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("video", response.data["errors"])
+        self.assertEqual(Apartment.objects.count(), 0)
+
+    def test_creation_rejects_oversized_video(self):
+        self._auth_as(self.landlord)
+        big = SimpleUploadedFile(
+            "big.mp4",
+            b"\x00\x00\x00\x20ftypmp42" + b"\x00" * (51 * 1024 * 1024),
+            content_type="video/mp4",
+        )
+        data = valid_payload()
+        data["video"] = big
+        response = self.client.post(
+            APARTMENTS_URL,
+            data,
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("video", response.data["errors"])
+        self.assertEqual(Apartment.objects.count(), 0)

@@ -10,6 +10,41 @@ from rest_framework import serializers
 from .models import Apartment, ApartmentImage
 
 MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 MB
+MAX_VIDEO_SIZE = 50 * 1024 * 1024  # 50 MB
+
+
+def validate_video_file(file_obj):
+    """Validate a single uploaded apartment video file (AGENTS 24).
+
+    Checks file type by extension, size and container signature (magic bytes)
+    so an arbitrary or executable payload is never stored as a video.
+    ``is_valid_apartment_video`` is used by the serializer and the presentation
+    form so both layers enforce exactly the same rules.
+    """
+    if file_obj is None:
+        raise serializers.ValidationError("A video file is required.")
+    if file_obj.size > MAX_VIDEO_SIZE:
+        raise serializers.ValidationError(
+            f"Video file must be {MAX_VIDEO_SIZE // (1024 * 1024)} MB or "
+            "smaller."
+        )
+    name = (file_obj.name or "").lower()
+    allowed = {".mp4", ".webm", ".mov"}
+    if name and not any(name.endswith(ext) for ext in allowed):
+        raise serializers.ValidationError(
+            "Unsupported video type. Allowed extensions are: "
+            + ", ".join(sorted(allowed))
+        )
+    signature = file_obj.read(12)
+    file_obj.seek(0)
+    # MP4/MOV: bytes 4-7 hold the "ftyp" brand. WebM: EBML magic 0x1A45DFA3.
+    is_mp4 = signature[4:8] == b"ftyp"
+    is_webm = signature[0:4] == b"\x1a\x45\xdf\xa3"
+    if not (is_mp4 or is_webm):
+        raise serializers.ValidationError(
+            "The uploaded file is not a supported video container."
+        )
+    return file_obj
 
 
 class _ApartmentBaseSerializer(serializers.ModelSerializer):
@@ -33,6 +68,7 @@ class _ApartmentBaseSerializer(serializers.ModelSerializer):
             "furnished",
             "additional_facilities",
             "availability",
+            "video",
         ]
         extra_kwargs = {
             "description": {"required": False},
@@ -44,6 +80,7 @@ class _ApartmentBaseSerializer(serializers.ModelSerializer):
             "furnished": {"required": False},
             "additional_facilities": {"required": False},
             "availability": {"required": False},
+            "video": {"required": False, "allow_null": True},
         }
 
     def validate_rental_price(self, value):
@@ -66,6 +103,11 @@ class _ApartmentBaseSerializer(serializers.ModelSerializer):
                 "Bathroom count must be at least 1."
             )
         return value
+
+    def validate_video(self, value):
+        if value is None:
+            return value
+        return validate_video_file(value)
 
 
 class ApartmentImageRequestSerializer(serializers.Serializer):
@@ -163,6 +205,7 @@ class ApartmentSerializer(serializers.ModelSerializer):
             "furnished",
             "additional_facilities",
             "availability",
+            "video",
             "images",
             "created_at",
             "updated_at",

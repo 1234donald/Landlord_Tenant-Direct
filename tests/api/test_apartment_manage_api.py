@@ -32,6 +32,15 @@ def make_image_bytes(name="photo.png", size=(32, 32), color=(255, 0, 0)):
     return SimpleUploadedFile(name, buffer.read(), content_type="image/png")
 
 
+def make_video_bytes(name="tour.mp4"):
+    # Minimal MP4 signature: bytes 4-7 hold the "ftyp" brand.
+    return SimpleUploadedFile(
+        name,
+        b"\x00\x00\x00\x20ftypmp42" + b"\x00" * (4096 - 12),
+        content_type="video/mp4",
+    )
+
+
 def make_user(email, role):
     return User.objects.create_user(
         email=email,
@@ -165,6 +174,41 @@ class ApartmentManageApiTests(APITestCase):
         images = list(ApartmentImage.objects.filter(apartment=apartment))
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0].pk, original.pk)
+
+    def test_owner_can_replace_video(self):
+        self._auth_as(self.landlord)
+        apartment = self._create_apartment()
+        apartment.video = make_video_bytes("old.mp4")
+        apartment.save()
+        old_name = apartment.video.name
+
+        response = self.client.patch(
+            f"{APARTMENTS_URL}{apartment.pk}/",
+            {"video": make_video_bytes("new.mp4")},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        apartment.refresh_from_db()
+        self.assertTrue(apartment.video)
+        self.assertNotEqual(apartment.video.name, old_name)
+        self.assertIn("video", response.data["data"])
+        self.assertTrue(response.data["data"]["video"].endswith(".mp4"))
+
+    def test_owner_rejects_invalid_video_on_update(self):
+        self._auth_as(self.landlord)
+        apartment = self._create_apartment()
+        bad = SimpleUploadedFile(
+            "tour.mp4", b"not a real video", content_type="video/mp4"
+        )
+        response = self.client.patch(
+            f"{APARTMENTS_URL}{apartment.pk}/",
+            {"video": bad},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("video", response.data["errors"])
+        apartment.refresh_from_db()
+        self.assertFalse(apartment.video)
 
     def test_owner_can_delete_listing(self):
         self._auth_as(self.landlord)

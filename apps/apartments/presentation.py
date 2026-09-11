@@ -17,7 +17,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView
 
 from .models import Apartment, ApartmentImage
-from .serializers import ApartmentImageRequestSerializer
+from .serializers import ApartmentImageRequestSerializer, validate_video_file
 from .views import build_search_queryset
 
 
@@ -62,6 +62,7 @@ class ApartmentForm(forms.ModelForm):
             "furnished",
             "additional_facilities",
             "availability",
+            "video",
         ]
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control"}),
@@ -75,6 +76,9 @@ class ApartmentForm(forms.ModelForm):
             "bedrooms": forms.NumberInput(attrs={"class": "form-control", "min": "1"}),
             "bathrooms": forms.NumberInput(attrs={"class": "form-control", "min": "1"}),
             "additional_facilities": forms.TextInput(attrs={"class": "form-control"}),
+            "video": forms.ClearableFileInput(
+                attrs={"class": "form-control", "accept": ".mp4,.webm,.mov"}
+            ),
         }
 
     def clean_rental_price(self):
@@ -94,6 +98,16 @@ class ApartmentForm(forms.ModelForm):
         if value is not None and value <= 0:
             raise forms.ValidationError("Bathroom count must be at least 1.")
         return value
+
+    def clean_video(self):
+        video = self.cleaned_data.get("video")
+        if not video:
+            return video
+        try:
+            return validate_video_file(video)
+        except Exception as exc:
+            message = str(exc.detail) if hasattr(exc, "detail") else str(exc)
+            raise forms.ValidationError(message)
 
 
 def _get_managed_apartment(request, pk):
@@ -264,7 +278,7 @@ class ApartmentCreateView(LoginRequiredMixin, LandlordOnlyMixin, View):
         return render(request, self.template_name, {"form": form, "is_edit": False})
 
     def post(self, request):
-        form = ApartmentForm(request.POST)
+        form = ApartmentForm(request.POST, request.FILES)
         if form.is_valid():
             apartment = form.save(commit=False)
             apartment.landlord = request.user
@@ -307,7 +321,7 @@ class ApartmentEditView(LoginRequiredMixin, LandlordOnlyMixin, View):
 
     def post(self, request, pk):
         apartment = self.get_apartment(request, pk)
-        form = ApartmentForm(request.POST, instance=apartment)
+        form = ApartmentForm(request.POST, request.FILES, instance=apartment)
         if form.is_valid():
             instance = form.save()
             _store_images(instance, request.FILES.getlist("images"))

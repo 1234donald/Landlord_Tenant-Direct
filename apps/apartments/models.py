@@ -10,6 +10,7 @@ not covered by the standard flags.
 """
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import models
 
 
@@ -83,6 +84,16 @@ class Apartment(models.Model):
     availability = models.BooleanField(
         default=True,
         help_text="Whether the apartment is currently available for rent.",
+    )
+
+    video = models.FileField(
+        upload_to="apartments/videos/",
+        blank=True,
+        null=True,
+        help_text="Short tour video (MP4, WebM or MOV, up to 50 MB).",
+        validators=[
+            FileExtensionValidator(allowed_extensions=["mp4", "webm", "mov"]),
+        ],
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

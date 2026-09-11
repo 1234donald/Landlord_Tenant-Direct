@@ -43,6 +43,16 @@
             {% endif %}
             {% endwith %}
 
+            {% if apartment.video %}
+            <div class="border-top">
+                <div class="ratio ratio-16x9 apartment-video" style="background:#000;">
+                    <video src="{{ apartment.video.url }}" controls preload="metadata">
+                        <p class="text-white p-3 mb-0">Video playback is not supported by your browser.</p>
+                    </video>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
                     <h1 class="h3 mb-0">{{ apartment.title }}</h1>

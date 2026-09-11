@@ -21,6 +21,7 @@ from apps.apartments.serializers import (
     ApartmentImageSerializer,
     ApartmentSerializer,
     ApartmentUpdateSerializer,
+    validate_video_file,
 )
 
 User = get_user_model()
@@ -42,6 +43,14 @@ def make_image_bytes(name="photo.png", size=(32, 32), color=(255, 0, 0)):
         img.save(buffer, format="PNG")
     buffer.seek(0)
     return SimpleUploadedFile(name, buffer.read(), content_type="image/png")
+
+
+def make_video_bytes(name="tour.mp4"):
+    return SimpleUploadedFile(
+        name,
+        b"\x00\x00\x00\x20ftypmp42" + b"\x00" * (4096 - 12),
+        content_type="video/mp4",
+    )
 
 
 def valid_payload(**overrides):
@@ -185,6 +194,51 @@ class ApartmentImageRequestSerializerTests(django_tests.TestCase):
             self.serializer.validate_image_file(bad)
 
 
+class VideoFileValidatorTests(django_tests.TestCase):
+    """Direct validation of the shared video-file validator."""
+
+    def test_valid_mp4_is_accepted(self):
+        file_obj = make_video_bytes()
+        self.assertIsNotNone(validate_video_file(file_obj))
+
+    def test_valid_webm_is_accepted(self):
+        file_obj = SimpleUploadedFile(
+            "tour.webm",
+            b"\x1a\x45\xdf\xa3" + b"\x00" * 1024,
+            content_type="video/webm",
+        )
+        self.assertIsNotNone(validate_video_file(file_obj))
+
+    def test_none_file_is_rejected(self):
+        with self.assertRaises(Exception):
+            validate_video_file(None)
+
+    def test_unsupported_extension_is_rejected(self):
+        bad = SimpleUploadedFile(
+            "tour.avi",
+            b"\x00\x00\x00\x20ftypmp42" + b"\x00" * 1024,
+            content_type="video/x-msvideo",
+        )
+        with self.assertRaises(Exception):
+            validate_video_file(bad)
+
+    def test_fake_content_is_rejected(self):
+        bad = SimpleUploadedFile(
+            "tour.mp4", b"not really a video", content_type="video/mp4"
+        )
+        with self.assertRaises(Exception):
+            validate_video_file(bad)
+
+    def test_oversized_file_is_rejected(self):
+        big = SimpleUploadedFile(
+            "big.mp4",
+            b"\x00\x00\x00\x20ftypmp42" + b"\x00" * (51 * 1024 * 1024),
+            content_type="video/mp4",
+        )
+        with self.assertRaises(Exception):
+            validate_video_file(big)
+
+
 class ApartmentReadSerializerTests(django_tests.TestCase):
     def setUp(self):
         self.landlord = make_landlord()
@@ -215,3 +269,7 @@ class ApartmentReadSerializerTests(django_tests.TestCase):
         serializer = ApartmentSerializer(self.apartment)
         for field in ("rental_price", "bedrooms", "bathrooms", "images"):
             self.assertTrue(serializer.fields[field].read_only)
+
+    def test_read_serializer_includes_video_field(self):
+        data = ApartmentSerializer(self.apartment).data
+        self.assertIn("video", data)

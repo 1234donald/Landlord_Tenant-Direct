@@ -70,5 +70,6 @@ class ApartmentAdmin(admin.ModelAdmin):
             },
         ),
         ("Availability", {"fields": ("availability",)}),
+        ("Media", {"fields": ("video",)}),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
