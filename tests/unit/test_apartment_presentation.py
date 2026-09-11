@@ -189,6 +189,28 @@ class ApartmentDetailPageTests(TestCase):
         response = self.client.get(reverse("apartment-detail", args=[apartment.pk]))
         self.assertIn("carousel", response.content.decode())
 
+    def test_detail_owner_landlord_sees_edit_listing_button(self):
+        apartment = make_apartment(self.landlord)
+        self.client.force_login(self.landlord)
+        response = self.client.get(reverse("apartment-detail", args=[apartment.pk]))
+        content = response.content.decode()
+        self.assertIn("Edit listing", content)
+        self.assertIn(reverse("apartment-edit", args=[apartment.pk]), content)
+
+    def test_detail_other_landlord_does_not_see_edit_listing_button(self):
+        apartment = make_apartment(self.landlord)
+        other = User.objects.create_user(
+            email="other-landlord@example.com",
+            password="StrongPass123!",
+            full_name="Another Landlord",
+            role=User.Role.LANDLORD,
+        )
+        self.client.force_login(other)
+        response = self.client.get(reverse("apartment-detail", args=[apartment.pk]))
+        content = response.content.decode()
+        self.assertNotIn("Edit listing", content)
+        self.assertNotIn(reverse("apartment-edit", args=[apartment.pk]), content)
+
     def test_detail_missing_apartment_returns_404(self):
         response = self.client.get(reverse("apartment-detail", args=[99999]))
         self.assertEqual(response.status_code, 404)
