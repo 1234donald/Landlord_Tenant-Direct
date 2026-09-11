@@ -93,6 +93,23 @@ class RegistrationApiTests(APITestCase):
         self.assertIn("password", response.data["errors"])
         self.assertFalse(User.objects.filter(email="tenant@example.com").exists())
 
+    def test_weak_password_then_valid_retry_succeeds(self):
+        weak = self.client.post(
+            REGISTER_URL,
+            self._payload(email="retry@example.com", password="123"),
+            format="json",
+        )
+        self.assertEqual(weak.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(User.objects.filter(email="retry@example.com").exists())
+
+        valid = self.client.post(
+            REGISTER_URL,
+            self._payload(email="retry@example.com", password="StrongPass123!"),
+            format="json",
+        )
+        self.assertEqual(valid.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(User.objects.filter(email="retry@example.com").exists())
+
     def test_missing_required_fields_is_rejected(self):
         response = self.client.post(
             REGISTER_URL,

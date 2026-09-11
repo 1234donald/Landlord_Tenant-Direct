@@ -125,9 +125,14 @@ class RegisterForm(forms.Form):
         return cleaned
 
     def save(self):
+        password = self.cleaned_data["password"]
+        # Defence-in-depth: never persist a user when the password fails the
+        # policy, even if ``save`` were reached without a prior ``is_valid``
+        # check (AGENTS 19, 23).
+        validate_password(password)
         user = User.objects.create_user(
             email=self.cleaned_data["email"],
-            password=self.cleaned_data["password"],
+            password=password,
             full_name=self.cleaned_data["full_name"],
             phone=self.cleaned_data.get("phone", ""),
             role=self.cleaned_data["role"],

@@ -68,6 +68,38 @@ class AuthPageTests(django_tests.TestCase):
             },
         )
         self.assertEqual(response.status_code, 400)
+        self.assertFalse(
+            User.objects.filter(email="weak@example.com").exists(),
+            "a flagged weak-password submission must not create an account",
+        )
+
+    def test_register_weak_password_then_valid_retry_succeeds(self):
+        for _ in range(2):
+            response = self.client.post(
+                reverse("register"),
+                {
+                    "email": "retry@example.com",
+                    "full_name": "Retry User",
+                    "password": "123",
+                    "password2": "123",
+                    "role": User.Role.TENANT,
+                },
+            )
+            self.assertEqual(response.status_code, 400)
+        self.assertFalse(User.objects.filter(email="retry@example.com").exists())
+
+        response = self.client.post(
+            reverse("register"),
+            {
+                "email": "retry@example.com",
+                "full_name": "Retry User",
+                "password": PASSWORD,
+                "password2": PASSWORD,
+                "role": User.Role.TENANT,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(User.objects.filter(email="retry@example.com").exists())
 
     def test_register_rejects_admin_role(self):
         response = self.client.post(

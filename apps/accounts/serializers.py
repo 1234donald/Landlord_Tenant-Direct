@@ -42,6 +42,10 @@ class RegisterSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
+        # Defence-in-depth: refuse to persist a user whose password fails the
+        # policy, even if ``create`` were invoked without a prior ``is_valid``
+        # check (AGENTS 19, 23).
+        validate_password(validated_data["password"])
         user = User.objects.create_user(**validated_data)
         return user
 
